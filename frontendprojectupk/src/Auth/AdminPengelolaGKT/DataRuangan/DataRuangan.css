@@ -1,0 +1,77 @@
+.gedung-container {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+.add-gedung-button-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
+.gedung-cards-container {
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+}
+
+.gedung-card {
+  width: 50%;
+  max-width: 350px;
+  min-width: 350px;
+  height: 250px;
+  margin-bottom: 20px;
+  box-sizing: border-box;
+}
+
+.gedung-card img {
+  height: 150px;
+  object-fit: cover;
+  width: 100%;
+}
+@media (min-width: 768px) {
+  .gedung-card {
+    width: 45%;
+  }
+}
+
+@media (min-width: 1024px) {
+  .gedung-card {
+    width: 30%;
+  }
+}
+
+/* tambah gedung */
+.add-gedung-container {
+  width: 400px;
+  margin: 50px auto;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  background-color: #d2e61c;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* ruangan punya */
+.ruangan-card {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #ddd;
+  background-color: #f8f9fa;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.ruangan-card-title {
+  font-size: 14px;
+  text-align: center;
+}
+
+.ruangan-card:hover {
+  background-color: #e9ecef;
+}

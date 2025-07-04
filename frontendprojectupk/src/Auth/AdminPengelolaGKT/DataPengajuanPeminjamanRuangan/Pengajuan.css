@@ -1,0 +1,229 @@
+import axios from "axios";
+import { useEffect, useRef, useState } from "react";
+import { Button } from "react-bootstrap";
+import { BsSearch } from "react-icons/bs";
+import { GrSelect } from "react-icons/gr";
+import { IoClose } from "react-icons/io5";
+import { TiTick } from "react-icons/ti";
+import { useNavigate } from "react-router-dom";
+import Navbar from "../../../Components/Navbar/Navbar";
+import Sidebar from "../../../Components/Sidebar/Sidebar";
+
+const PengajuanPeminjamanRuangan = () => {
+  const [pengajuan, setPengajuan] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [openDropdownId, setOpenDropdownId] = useState(null);
+  const navigate = useNavigate();
+
+  // Ref untuk elemen dropdown yang terbuka
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const fetchPengajuan = async () => {
+      try {
+        const response = await axios.get("http://localhost:8000/api/peminjaman");
+        setPengajuan(response.data);
+      } catch (error) {
+        console.error("Gagal mengambil data peminjaman:", error);
+      }
+    };
+    fetchPengajuan();
+  }, []);
+
+  // Tutup dropdown kalau klik di luar dropdown yang terbuka
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setOpenDropdownId(null);
+      }
+    }
+    if (openDropdownId !== null) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [openDropdownId]);
+
+  const handleSearch = (term) => {
+    setSearchTerm(term);
+  };
+
+  const handleTerima = async (id) => {
+    try {
+      await axios.post(`http://localhost:8000/api/peminjaman/${id}/terima`);
+      alert("Pengajuan diterima.");
+      window.location.reload();
+    } catch (error) {
+      console.error("Gagal menerima pengajuan:", error);
+    }
+  };
+
+  const handleTolak = async (id) => {
+    try {
+      await axios.post(`http://localhost:8000/api/peminjaman/${id}/tolak`);
+      alert("Pengajuan ditolak.");
+      window.location.reload();
+    } catch (error) {
+      console.error("Gagal menolak pengajuan:", error);
+    }
+  };
+
+  const handleDetailClick = (id) => {
+    navigate(`/penjadwalan/detail/${id}`);
+    setOpenDropdownId(null);
+  };
+
+  const pendingPengajuan = pengajuan.filter((item) => item.status === "pending");
+
+  return (
+    <div className="dashboard-container-jurusan">
+      <Navbar />
+      <Sidebar />
+      <h1 className="Dashboard-title" style={{ marginLeft: "115px" }}>
+        Pengajuan Peminjaman Ruangan
+      </h1>
+      <div className="carddatadosen">
+        <div className="search-container">
+          <input type="text" className="form-control search-input" placeholder="Cari..." value={searchTerm} onChange={(e) => handleSearch(e.target.value)} style={{ textAlign: "left" }} />
+          <Button
+            className="btn btn-primary search-button"
+            onClick={() => handleSearch(searchTerm)}
+            style={{
+              backgroundColor: "#0C20B5",
+              borderColor: "#0C20B5",
+              color: "#FFFFFF",
+            }}
+          >
+            <BsSearch />
+          </Button>
+        </div>
+
+        <table className="table table-striped table-bordered table-hover">
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>Nama</th>
+              <th>Kelas</th>
+              <th>Mata Kuliah</th>
+              <th>Dosen</th>
+              <th>Nama Ruangan</th>
+              <th>Jam</th>
+              <th>Keperluan</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {pendingPengajuan.length === 0 ? (
+              <tr>
+                <td colSpan="9" className="text-center">
+                  Tidak ada pengajuan yang pending.
+                </td>
+              </tr>
+            ) : (
+              pendingPengajuan.map((item, index) => (
+                <tr key={item.id}>
+                  <td>{index + 1}</td>
+                  <td>{item.nama}</td>
+                  <td>{item.kelas}</td>
+                  <td>{item.matakuliah}</td>
+                  <td>{item.dosen}</td>
+                  <td>{item.namaruangan}</td>
+                  <td>{item.jam}</td>
+                  <td>{item.keperluan}</td>
+                  <td style={{ position: "relative" }}>
+                    <button
+                      onClick={() => setOpenDropdownId(openDropdownId === item.id ? null : item.id)}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        marginBottom: "-5px",
+                        color: "blue",
+                        fontWeight: "900",
+                        fontSize: "20px",
+                        padding: 0,
+                      }}
+                      aria-haspopup="true"
+                      aria-expanded={openDropdownId === item.id}
+                      aria-controls={`dropdown-menu-${item.id}`}
+                    >
+                      <GrSelect style={{ fontSize: "20px" }} />
+                    </button>
+
+                    {openDropdownId === item.id && (
+                      <div
+                        ref={dropdownRef}
+                        id={`dropdown-menu-${item.id}`}
+                        style={{
+                          position: "absolute",
+                          top: "100%",
+                          right: 0,
+                          background: "whbite",
+                          boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                          borderRadius: "4px",
+                          zIndex: 1000,
+                          minWidth: "180px",
+                        }}
+                      >
+                        <button
+                          onClick={() => {
+                            handleDetailClick(item.id);
+                            setOpenDropdownId(null);
+                          }}
+                          style={{ ...dropdownItemStyle, color: "#ffc107" }}
+                          className="dropdown-button"
+                        >
+                          <BsSearch style={{ marginRight: "5px" }} />
+                          Lihat Detail
+                        </button>
+                        <button
+                          onClick={() => {
+                            handleTerima(item.id);
+                            setOpenDropdownId(null);
+                          }}
+                          style={{ ...dropdownItemStyle, color: "green" }}
+                          className="dropdown-button"
+                        >
+                          <TiTick style={{ marginRight: "5px" }} />
+                          Terima Pengajuan
+                        </button>
+                        <button
+                          onClick={() => {
+                            handleTolak(item.id);
+                            setOpenDropdownId(null);
+                          }}
+                          style={{ ...dropdownItemStyle, color: "red" }}
+                          className="dropdown-button"
+                        >
+                          <IoClose style={{ marginRight: "5px" }} />
+                          Tolak Pengajuan
+                        </button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+const dropdownItemStyle = {
+  display: "flex",
+  alignItems: "center",
+  width: "100%",
+  padding: "8px 12px",
+  border: "none",
+  background: "white",
+  textAlign: "left",
+  cursor: "pointer",
+  fontSize: "14px",
+};
+
+export default PengajuanPeminjamanRuangan;

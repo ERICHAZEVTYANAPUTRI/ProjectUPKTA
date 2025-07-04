@@ -1,0 +1,208 @@
+.main-content {
+  margin-left: 310px; /* agar tidak tertindih sidebar */
+  padding: 20px;
+  min-height: 100vh;
+  background-color: #f5f5f5; /* opsional */
+  box-sizing: border-box;
+}
+
+.sidebar {
+  width: 260px;
+  background-color: #ffffff;
+  color: #333;
+  position: fixed;
+  top: 20px;
+  left: 25px;
+  height: calc(105vh - 90px); /* Menyesuaikan tinggi sidebar */
+  padding-top: 10px;
+  padding-left: 10px;
+  padding-right: 10px;
+  z-index: 1000;
+  border-radius: 10px;
+  overflow: hidden; /* Menyembunyikan overflow di sidebar */
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease;
+}
+
+.sidebar:hover {
+  transform: translateY(-5px);
+}
+
+/* Menjaga logo tetap di atas */
+.sidebar-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  background-color: #fff;
+}
+
+.sidebar-logo {
+  margin-top: 10px;
+  width: 90px;
+  height: auto;
+  margin-bottom: 15px;
+}
+
+/* Menu title tetap di atas dan tidak terpengaruh scroll */
+.menu-title {
+  font-size: 14px !important;
+  font-weight: 600;
+  color: #72738e;
+  margin-bottom: -20px;
+  padding-left: 20px;
+  background-color: white;
+  position: sticky;
+  top: 90px; /* Menjaga posisi menu title tetap di tempat */
+  z-index: 1000;
+  padding-bottom: 10px;
+  margin-right: 190px;
+  width: fit-content;
+}
+
+.menu-title::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 8px;
+  width: calc(100% - 50%);
+  height: 2px;
+  background-color: #72738e;
+  transform: translateX(-50%);
+}
+
+/* Konten menu yang bisa digulirkan */
+/* Menyembunyikan scrollbar pada sidebar-links tapi tetap memungkinkan scroll */
+.sidebar-links {
+  flex: 1;
+  overflow-y: scroll; /* Masih memungkinkan scroll vertikal */
+  padding-right: 5px; /* Menjaga agar konten tidak terpotong oleh scrollbar */
+  margin-top: 20px; /* Menjaga jarak antara title dan menu */
+}
+
+/* Menyembunyikan scrollbar */
+.sidebar-links::-webkit-scrollbar {
+  width: 0px; /* Menghilangkan scrollbar vertikal */
+  background: transparent; /* Tidak ada latar belakang */
+}
+
+.sidebar-links::-webkit-scrollbar-thumb {
+  background: transparent; /* Tidak ada pemegang scrollbar */
+}
+
+.sidebar-links ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-links ul li a {
+  color: #72738e;
+  text-decoration: none;
+  display: block;
+  padding: 12px 12px;
+  border-radius: 5px;
+  transition: background-color 0.3s, color 0.3s;
+  position: relative;
+  font-size: 18px;
+}
+
+.sidebar-links ul li a:hover {
+  color: #1860eb;
+  background-color: transparent;
+}
+
+.sidebar-links ul li a.active {
+  color: #1860eb;
+}
+
+.sidebar-links ul li a.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 28px;
+  width: 5px;
+  background-color: #1860eb;
+}
+
+.sidebar-footer {
+  padding: 10px;
+  text-align: center;
+  border-top: 1px solid #eee;
+}
+
+/* Dropdown button style */
+.dropdown-btn {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background: none;
+  border: none;
+  color: #72738e;
+  padding: 12px 12px;
+  cursor: pointer;
+  font-size: 18px !important; /* Ukuran font tetap */
+  font-weight: 400; /* Tidak ada perubahan berat font */
+  border-radius: 5px;
+  transition: background-color 0.3s, color 0.3s;
+  text-align: left;
+  margin-bottom: 3px;
+}
+
+/* Menghilangkan perubahan ukuran font pada dropdown yang terbuka */
+.dropdown-btn.open {
+  font-weight: 400; /* Menjaga agar tidak menjadi tebal */
+}
+
+/* Menjaga ukuran font tetap tidak berubah saat hover atau klik */
+.dropdown-btn:hover {
+  background-color: transparent;
+  color: #1860eb;
+}
+
+.dropdown-btn svg {
+  margin-right: 10px;
+  vertical-align: middle;
+  width: 24px;
+  height: 24px;
+  color: inherit;
+  flex-shrink: 0;
+}
+
+/* Submenu style */
+.submenu {
+  list-style: none;
+  padding-left: 40px;
+  display: none;
+}
+
+.dropdown-btn.open + .submenu {
+  display: block;
+}
+
+.submenu li {
+  margin: 0 0;
+  padding-left: 32px;
+}
+
+.dropdown-btn:hover {
+  background-color: transparent;
+  color: #1860eb;
+}
+
+.sidebar-links ul li .dropdown-btn:hover {
+  background-color: white;
+  color: #1860eb;
+}
+
+.dropdown-btn svg {
+  margin-right: 10px;
+  vertical-align: middle;
+  width: 24px; /* naikkan dari 18px */
+  height: 24px;
+  color: inherit;
+  flex-shrink: 0; /* biar tidak mengecil saat ada teks panjang */
+}

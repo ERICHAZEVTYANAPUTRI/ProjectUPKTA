@@ -1,0 +1,270 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  font-family: Calibri, sans-serif;
+}
+
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.login-card {
+  background-color: white;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 450px;
+  text-align: center;
+  border-top: 4px solid #1860eb;
+  border-right: 1px solid #ccc;
+  border-left: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+}
+h3 {
+  background-color: #bbc2ce2e;
+  padding: 20px 20px 20px 20px;
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 0 0 4px 4px;
+  margin: 0;
+  font-weight: bold;
+  border-bottom: 1px solid #ccc;
+  font-family: Calibri, sans-serif;
+  font-size: 16px !important;
+}
+
+.login-card h2,
+.login-card h3,
+.login-card h4 {
+  margin: 5px 0;
+}
+
+.login-card h2 {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.login-card h3,
+.login-card h4 {
+  font-size: 14px;
+  margin-top: 2px;
+}
+
+.logo {
+  width: 60px;
+  height: auto;
+  margin: 20px 0;
+}
+
+.input-group {
+  margin-bottom: 20px;
+}
+
+.input-with-icon {
+  position: relative;
+}
+
+.input-icon {
+  position: absolute;
+  top: 50%;
+  background-color: #ccc;
+  transform: translateY(-50%);
+  color: #000000;
+  padding: 12px;
+  border-radius: 4px;
+}
+.input-with-icon {
+  position: relative;
+}
+
+.eye-icon {
+  position: absolute;
+  right: 60px;
+  top: 55%;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+input[type="password"]::-ms-reveal {
+  display: none;
+}
+
+input[type="password"]::-webkit-credentials-auto-fill-button {
+  display: none !important;
+}
+
+input[type="password"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+input {
+  width: 80%;
+  padding: 10px 20px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-weight: bold;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
+  text-align: center;
+  font-family: Calibri, sans-serif;
+  font-size: 16px !important;
+}
+
+input:focus {
+  outline: none;
+  border-color: #ccc;
+}
+button {
+  background-color: #1860eb;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  font-weight: bold;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  font-family: Calibri, sans-serif;
+  font-size: 16px !important;
+}
+
+button:hover {
+  background-color: #1860eb;
+}
+
+.error-message {
+  color: red;
+  font-size: 18px;
+  margin-top: 10px;
+  font-family: Calibri, sans-serif;
+  font-size: 16px !important;
+}
+
+/* bagian form registrasi */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  font-family: Calibri, sans-serif;
+}
+
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  padding: 20px;
+}
+
+.login-card {
+  background-color: white;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 450px;
+  text-align: center;
+  border-top: 4px solid #1860eb;
+  border-right: 1px solid #ccc;
+  border-left: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+h3 {
+  background-color: #bbc2ce2e;
+  padding: 20px;
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 0 0 4px 4px;
+  margin: 0;
+  font-weight: bold;
+  border-bottom: 1px solid #ccc;
+  font-family: Calibri, sans-serif;
+  font-size: 16px !important;
+}
+
+.logo {
+  width: 60px;
+  height: auto;
+  margin: 20px 0;
+}
+
+.input-group {
+  margin-bottom: 20px;
+}
+
+.input-with-icon {
+  position: relative;
+}
+
+.input-icon {
+  position: absolute;
+  top: 50%;
+  background-color: #ccc;
+  transform: translateY(-50%);
+  color: #000000;
+  padding: 12px;
+  border-radius: 4px;
+}
+
+.eye-icon {
+  position: absolute;
+  right: 60px;
+  top: 55%;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+input {
+  width: 80%;
+  padding: 10px 20px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-weight: bold;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
+  text-align: center;
+  font-family: Calibri, sans-serif;
+  font-size: 16px !important;
+}
+
+input:focus {
+  outline: none;
+  border-color: #ccc;
+}
+
+button {
+  background-color: #1860eb;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  font-weight: bold;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  font-family: Calibri, sans-serif;
+  font-size: 16px !important;
+}
+
+button:hover {
+  background-color: #1860eb;
+}
+
+.error-message {
+  color: red;
+  font-size: 18px;
+  margin-top: 10px;
+  font-family: Calibri, sans-serif;
+  font-size: 16px !important;
+}

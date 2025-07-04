@@ -1,0 +1,259 @@
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.table thead {
+  background-color: #0c20b5;
+  color: white;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.table th,
+.table td {
+  padding: 12px 15px;
+  text-align: center;
+  border: 1px solid #ddd;
+}
+.table td {
+  padding: 0px 15px;
+  text-align: center;
+  border: 1px solid #ddd;
+}
+
+.table tbody tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+.table tbody tr:hover {
+  background-color: #ddd;
+}
+
+.table td:first-child,
+.table th:first-child {
+  width: 60px;
+  text-align: center;
+}
+
+.table-bordered {
+  border: 2px solid #ddd;
+}
+
+.table-bordered th,
+.table-bordered td {
+  border: 1px solid #ddd;
+}
+
+.table-striped tbody tr:nth-child(odd) {
+  background-color: #f9f9f9;
+}
+
+.table-hover tbody tr:hover {
+  background-color: #f1f1f1;
+}
+.btn-warning {
+  background-color: #e0a800 !important;
+  border-color: #e0a800 !important;
+}
+
+.btn-danger {
+  background-color: #c82333 !important;
+  border-color: #c82333 !important;
+}
+
+.cardpengelola {
+  background-color: rgba(255, 255, 255, 0.7);
+  padding: 50px;
+  margin-top: 195px;
+  margin-left: 340px;
+  border-radius: 10px;
+  text-align: center;
+  width: 100%;
+  width: 900px;
+  height: 370px;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.search-container {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1px;
+  margin-bottom: -20px;
+  margin-top: 20px;
+}
+
+.search-input {
+  padding-right: 30px;
+  width: 300px;
+  height: 37px;
+}
+
+.search-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 15px;
+  background-color: #0c20b5;
+  border-color: #0c20b5;
+  color: white;
+}
+
+.cardpengelola .btn-success {
+  background-color: #008000 !important;
+  border-color: #008000 !important;
+  padding: 10px 20px;
+  border-radius: 8px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: white !important;
+  margin-top: 80px;
+}
+
+.cardpengelola .btn-success i {
+  font-size: 20px;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  list-style: none;
+  padding: 0;
+  margin-top: 20px;
+}
+
+.pagination li {
+  margin: 0 5px;
+  padding: 5px 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.pagination .active {
+  background-color: #0c20b5;
+  color: #fff;
+  font-weight: bold;
+  border-color: #0c20b5;
+}
+
+.pagination li:hover {
+  background-color: #f0f0f0;
+}
+
+.pagination .disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.pagination .previous,
+.pagination .next {
+  font-weight: bold;
+  padding: 5px 10px;
+}
+
+.pagination .previous,
+.pagination .next {
+  background-color: #0c20b5;
+  color: #fff;
+  border-radius: 5px;
+}
+
+.pagination .previous:hover,
+.pagination .next:hover {
+  background-color: #0056b3;
+}
+
+.tpgk-dashboard-container {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+.tpgk-dashboard-title {
+  font-size: 2rem;
+  margin-left: 50px;
+  font-weight: bold;
+  color: #333;
+}
+
+.tpgk-card {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+}
+
+.tpgk-form {
+  width: 50%;
+  margin: 0 auto;
+}
+
+.tpgk-button-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.tpgk-submit-button {
+  background-color: #008000;
+  border-color: #008000;
+  padding: 10px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 100%;
+}
+
+.tpgk-icon {
+  font-size: 20px;
+  margin-right: 5px;
+}
+
+.tpgk-error-message {
+  color: red;
+  margin-top: 10px;
+}
+
+.tpgk-success-message {
+  color: green;
+  margin-top: 10px;
+}
+
+/* select */
+.select-wrapper {
+  display: flex;
+  align-self: flex-start; /* biar dia nggak ikut rata tengah */
+  margin-top: 60px;
+  margin-bottom: -80px;
+}
+
+.custom-select {
+  background-color: #ffffff;
+  border: 1px solid #0c20b5;
+  color: #0c20b5;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 4px;
+}
+
+.custom-select:focus {
+  border-color: #0a15a0;
+  box-shadow: 0 0 0 3px rgba(12, 32, 181, 0.2);
+  outline: none;
+}
+
+.custom-select option {
+  padding: 10px;
+  font-size: 14px;
+}
