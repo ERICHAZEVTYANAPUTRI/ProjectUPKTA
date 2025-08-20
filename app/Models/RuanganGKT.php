@@ -22,9 +22,8 @@ class RuanganGKT extends Model
         'saranakelas',
         'statusruangan',
     ];
-        public function penjadwalanruangan()
+    public function penjadwalanruangan()
     {
         return $this->hasMany(PenjadwalanRuangan::class, 'ruangan_id', 'id');
     }
-
 }

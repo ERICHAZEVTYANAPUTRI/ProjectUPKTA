@@ -8,11 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class peminjamanselesaisesuaijdwal extends Model
 {
     use HasFactory;
-
-    // Nama tabel sesuai migrasi
     protected $table = 'peminjamanselesaisesuaijdwals';
-
-    // Kolom yang boleh diisi massal
     protected $fillable = [
         'mahasiswa_id',
         'adminjurusan_id',
@@ -36,22 +32,16 @@ class peminjamanselesaisesuaijdwal extends Model
         'waktu_pengembalian',
     ];
 
-    // Jika kamu mau otomatis cast waktu_pengembalian ke Carbon instance
     protected $dates = ['waktu_pengembalian'];
 
-    // Relasi ke model User (Mahasiswa)
     public function mahasiswa()
     {
         return $this->belongsTo(User::class, 'mahasiswa_id');
     }
-
-    // Relasi ke model User (Admin Jurusan)
     public function adminjurusan()
     {
         return $this->belongsTo(User::class, 'adminjurusan_id');
     }
-
-    // Relasi ke model Prodi
     public function prodi()
     {
         return $this->belongsTo(Prodi::class, 'prodi_id');
@@ -68,15 +58,10 @@ class peminjamanselesaisesuaijdwal extends Model
     {
         return $this->belongsTo(kelas::class, 'kelas_id');
     }
-
-
-    // Relasi ke model TahunAjaran
     public function tahunajaran()
     {
         return $this->belongsTo(TahunAjaran::class, 'tahunajaran_id');
     }
-
-    // Relasi ke model Matakuliah
     public function matakuliah()
     {
         return $this->belongsTo(Matakuliah::class, 'kodematakuliah', 'kodematakuliah');

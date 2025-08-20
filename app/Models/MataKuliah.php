@@ -27,7 +27,7 @@ class Matakuliah extends Model
     {
         return $this->belongsTo(Kurikulum::class, 'kurikulum_id', 'id');
     }
-        public function tahunajaran()
+    public function tahunajaran()
     {
         return $this->belongsTo(TahunAjaran::class, 'tahunajaran_id', 'id');
     }
@@ -38,7 +38,7 @@ class Matakuliah extends Model
     }
     public function adminjurusan()
     {
-    return $this->belongsTo(User::class, 'adminjurusan_id')->where('role', 'admin_jurusan');
+        return $this->belongsTo(User::class, 'adminjurusan_id')->where('role', 'admin_jurusan');
     }
     public function peminjamanSelesai()
     {
@@ -48,5 +48,4 @@ class Matakuliah extends Model
     {
         return $this->hasMany(PengajuanPeminjamanRuangan::class, 'kodematakuliah', 'kodematakuliah');
     }
-
 }

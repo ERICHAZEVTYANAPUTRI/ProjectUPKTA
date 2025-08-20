@@ -11,31 +11,54 @@ class PeminjamanselesaisesuaijdwalController extends Controller
     public function index()
     {
         $peminjamanselesai = peminjamanselesaisesuaijdwal::with([
-        'mahasiswa','mahasiswa.jurusan','mahasiswa.prodi', 'matakuliah','matakuliah.tahunajaran','matakuliah.kurikulum','prodi','tahunajaran','adminjurusan','dosen','ruangan','kelas','dosen.prodi'
+            'mahasiswa',
+            'mahasiswa.jurusan',
+            'mahasiswa.prodi',
+            'matakuliah',
+            'matakuliah.tahunajaran',
+            'matakuliah.kurikulum',
+            'prodi',
+            'tahunajaran',
+            'adminjurusan',
+            'dosen',
+            'ruangan',
+            'kelas',
+            'dosen.prodi'
 
-    ])->orderBy('created_at', 'desc')->get(); // pakai get() kalau tidak perlu pagination untuk API
+        ])->orderBy('created_at', 'desc')->get();
 
 
         return response()->json($peminjamanselesai);
     }
-        public function show($id)
-{
-    $jadwal = peminjamanselesaisesuaijdwal::with([
-        'mahasiswa','mahasiswa.jurusan','mahasiswa.prodi', 'matakuliah','matakuliah.tahunajaran','matakuliah.kurikulum','prodi','tahunajaran','adminjurusan','dosen','ruangan','kelas','dosen.prodi'
-    ])->find($id);
+    public function show($id)
+    {
+        $jadwal = peminjamanselesaisesuaijdwal::with([
+            'mahasiswa',
+            'mahasiswa.jurusan',
+            'mahasiswa.prodi',
+            'matakuliah',
+            'matakuliah.tahunajaran',
+            'matakuliah.kurikulum',
+            'prodi',
+            'tahunajaran',
+            'adminjurusan',
+            'dosen',
+            'ruangan',
+            'kelas',
+            'dosen.prodi'
+        ])->find($id);
 
-    if (!$jadwal) {
-        return response()->json(['message' => 'Data tidak ditemukan'], 404);
+        if (!$jadwal) {
+            return response()->json(['message' => 'Data tidak ditemukan'], 404);
+        }
+
+        return response()->json([
+            'data' => $jadwal
+        ]);
     }
 
-return response()->json([
-    'data' => $jadwal
-]);
-}
-
-        public function PengembalianDiterima(Request $request)
+    public function PengembalianDiterima(Request $request)
     {
-        // Validasi jika diperlukan
         $data = $request->validate([
             'mahasiswa_id' => 'required|integer',
             'adminjurusan_id' => 'required|integer',
@@ -54,11 +77,10 @@ return response()->json([
             'statusdigunakan' => 'required|string',
             'statusterkirim' => 'required|string',
             'statuspeminjaman' => 'required|string',
-        'waktu_pengembalian' => 'required|string',  // ambil string dulu
+            'waktu_pengembalian' => 'required|string',
         ]);
         $data['waktu_pengembalian'] = Carbon::parse($data['waktu_pengembalian'])->format('Y-m-d H:i:s');
 
-        // Simpan data baru ke tabel peminjamanselesaisesuaijdwal
         $peminjaman = peminjamanselesaisesuaijdwal::create($data);
 
         return response()->json([
@@ -66,5 +88,4 @@ return response()->json([
             'data' => $peminjaman,
         ], 201);
     }
-
 }

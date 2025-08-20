@@ -96,7 +96,7 @@ const HalamanMahasiswaPengembalianSesuaiJadwal = () => {
           overflowY: "auto",
           px: 3,
           ml: "50px",
-          width: "calc(100% - 100px)", // membatasi lebar konten
+          width: "calc(100% - 100px)",
           scrollbarWidth: "none",
           "&::-webkit-scrollbar": { display: "none" },
         }}
@@ -220,7 +220,7 @@ const HalamanMahasiswaPengembalianSesuaiJadwal = () => {
                               color: "#4CAF50",
                               borderColor: "#4CAF50",
                               padding: "8px 12px",
-                              fontSize: "14px", // default font size untuk tombol
+                              fontSize: "14px",
                               borderRadius: 1,
                               display: "flex",
                               flexDirection: "column",

@@ -1,16 +1,9 @@
 <?php
 
-use App\Http\Controllers\DashboardAdminJurusanController;
-use App\Http\Controllers\DashboardMahasiswaController;
-use App\Http\Controllers\DashboardPengelolaController;
-use App\Http\Controllers\JeniskelasController;
-use App\Http\Controllers\ModelkelasController;
-use App\Http\Controllers\ResetPasswordcontroller;
-use App\Http\Controllers\SaranakelasController;
 use Illuminate\Http\Request;
 use App\Models\PenjadwalanRuangan;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\sController;
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DosenController;
 use App\Http\Controllers\KelasController;
 use App\Http\Controllers\ProdiController;
@@ -18,21 +11,29 @@ use App\Http\Controllers\JurusanController;
 use App\Models\peminjamanselesaisesuaijdwal;
 use App\Http\Controllers\KurikulumController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\JeniskelasController;
 use App\Http\Controllers\MataKuliahController;
+use App\Http\Controllers\ModelkelasController;
 use App\Http\Controllers\NamaGedungController;
 use App\Http\Controllers\RuanganGKTController;
+use App\Http\Controllers\SaranakelasController;
 use App\Http\Controllers\TahunAjaranController;
 use App\Http\Controllers\SmesterGenapController;
 use App\Http\Controllers\DetailRuanganController;
+use App\Http\Controllers\ResetPasswordcontroller;
 use App\Http\Controllers\SmesterGanjilController;
 use App\Http\Controllers\UserMahasiswaController;
 use App\Http\Controllers\UserPengelolaController;
 use App\Http\Controllers\TahunAjaranGenapController;
 use App\Http\Controllers\UserAdminJurusanController;
+use App\Http\Controllers\PengajuanKegiatanController;
 use App\Http\Controllers\ProdiSmesterGenapController;
 use App\Http\Controllers\TahunAjaranGanjilController;
+use App\Http\Controllers\DashboardMahasiswaController;
+use App\Http\Controllers\DashboardPengelolaController;
 use App\Http\Controllers\PenjadwalanRuanganController;
 use App\Http\Controllers\ProdiSmesterGanjilController;
+use App\Http\Controllers\DashboardAdminJurusanController;
 use App\Http\Controllers\PenjadwalanRuanganGenapController;
 use App\Http\Controllers\PenjadwalanRuanganGanjilController;
 use App\Http\Controllers\PengajuanPeminjamanRuanganController;
@@ -48,6 +49,7 @@ use App\Http\Controllers\PeminjamanselesaisesuaijdwalController;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
+
 Route::post('/logout', [LoginController::class, 'logout'])->middleware('auth:sanctum');
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
@@ -201,7 +203,8 @@ Route::middleware('auth:sanctum')->put('/kelasmahasiswa/edit/{id}', [KelasContro
 Route::middleware('auth:sanctum')->post('/kelasmahasiswa/tambah', [KelasController::class, 'store']);
 Route::get('/kelasmahasiswa', [KelasController::class, 'index']);
 Route::get('/kelasmahasiswa/{id}', [KelasController::class, 'show']);
-Route::get('/penjadwalanruanganget/{id}', [PenjadwalanRuanganController::class, 'show']);
+Route::get('/penjadwalanruangangetdetail/{id}', [PenjadwalanRuanganController::class, 'show']);
+Route::get('/penjadwalanruangangetdetailhistory/{id}', [PeminjamanselesaisesuaijdwalController::class, 'show']);
 
 
 
@@ -251,7 +254,7 @@ Route::middleware('auth:sanctum')->get('/pengajuan-diterima', [PengajuanPeminjam
 
 Route::middleware('auth:sanctum')->get('/peminjaman-berlangsung', [PengajuanPeminjamanRuanganController::class, 'sedangBerlangsung']);
 Route::middleware('auth:sanctum')->group(function () {
-    
+
     // Endpoint untuk mengambil jadwal yang sedang berlangsung
     Route::get('/peminjaman-berlangsung', [PengajuanPeminjamanRuanganController::class, 'sedangBerlangsung']);
 
@@ -297,3 +300,21 @@ Route::middleware('auth:sanctum')->get('/jumlahdosenadminjurusan', [DashboardAdm
 Route::middleware('auth:sanctum')->get('/peminjamanpendingadminjurusan', [DashboardAdminJurusanController::class, 'dataPendingPeminjaman']);
 Route::middleware('auth:sanctum')->post('/ajukan-tukar/{id}', [DashboardMahasiswaController::class, 'ajukanTukar']);
 Route::post('/terima-tukar/{id}', [DashboardMahasiswaController::class, 'terimaTukar']);
+
+//pengajuan kegiatan
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/pengajuan-kegiatan', [PengajuanKegiatanController::class, 'store']);
+    Route::get('/pengajuan-kegiatan', [PengajuanKegiatanController::class, 'index']);
+    Route::get('/pengajuankegiatanhistorymahasiswa', [PengajuanKegiatanController::class, 'indexmahasiswahistory']);
+    Route::patch('/pengajuan-kegiatan/{id}/status', [PengajuanKegiatanController::class, 'updateStatus']);
+});
+Route::post('/peminjamankegiatan/{id}/terima', [PengajuanKegiatanController::class, 'terimakegiatan']);
+Route::post('/peminjamankegiatan/{id}/tolak', [PengajuanKegiatanController::class, 'tolakkegiatan']);
+Route::patch('/pengajuan-kegiatan/{id}/batalkan', [PengajuanKegiatanController::class, 'batalkankegiatanpengelola']);
+Route::patch('/pengajuan-kegiatan/auto-batal', [PengajuanKegiatanController::class, 'batalkankegiatanOtomatis']);
+Route::put('/tolakvideokegiatanpengelola/{id}', [PengajuanKegiatanController::class, 'tolakvidiokegiatanpengembalian'])->middleware('auth:sanctum');
+Route::put('/terimavideokegiatanpengelola/{id}', [PengajuanKegiatanController::class, 'terimavidiokegiatanpengembalian'])->middleware('auth:sanctum');
+Route::get('/pengajuan-kegiatan/{id}', [PengajuanKegiatanController::class, 'show']);
+Route::middleware('auth:sanctum')->delete('/pengajuankegiatan/{id}', [PengajuanKegiatanController::class, 'batalPengajuankegiatan']);
+Route::post('pinjamjadwalkegiatan/{id}', [PengajuanKegiatanController::class, 'pinjamJadwalKegiatan']);
+Route::post('/kembalikanruangankegiatan/{id}', [PengajuanKegiatanController::class, 'kembalikanruangankegiatan']);

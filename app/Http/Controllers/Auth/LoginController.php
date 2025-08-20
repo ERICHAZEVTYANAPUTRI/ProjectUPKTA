@@ -175,20 +175,16 @@ class LoginController extends Controller
             $user->notlp = $request->notlp;
         }
     }
-        public function logout(Request $request)
+    public function logout(Request $request)
     {
         try {
-            // Log out user dari API menggunakan token
             Auth::user()->tokens->each(function ($token) {
-                $token->delete(); // Menghapus token pengguna
+                $token->delete();
             });
 
-            // Kembalikan respons JSON yang menandakan logout berhasil
             return response()->json(['message' => 'Logout berhasil'], 200);
         } catch (\Exception $e) {
-            // Jika ada error, kembalikan respons error
             return response()->json(['error' => 'Terjadi kesalahan saat logout'], 500);
         }
     }
-
 }

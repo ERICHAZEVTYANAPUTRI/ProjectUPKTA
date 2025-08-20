@@ -1,6 +1,14 @@
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import { Avatar, Box, Button, Card, Divider, TextField, Typography } from "@mui/material";
+import {
+    Avatar,
+    Box,
+    Button,
+    Card,
+    Divider,
+    TextField,
+    Typography,
+} from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import InputAdornment from "@mui/material/InputAdornment";
 import axios from "axios";
@@ -11,1088 +19,1239 @@ import swal from "sweetalert";
 import SkeletonProfileCard from "./SkeletonProfileCard";
 
 const MahasiswaProfile = ({ user, setUser, open }) => {
-  const [editableUser, setEditableUser] = useState(user);
-  const [imagePreview, setImagePreview] = useState(null);
-  const [jurusanList, setJurusanList] = useState([]);
-  const [prodiList, setProdiList] = useState([]);
-  const [kelasList, setKelasList] = useState([]);
-  const [filteredProdiList, setFilteredProdiList] = useState([]);
-  const [filteredKelasList, setFilteredKelasList] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [jurusanOptions, setJurusanOptions] = useState([]);
-  const [prodiOptions, setProdiOptions] = useState([]);
-  const [kelasOptions, setKelasOptions] = useState([]);
+    const [editableUser, setEditableUser] = useState(user);
+    const [imagePreview, setImagePreview] = useState(null);
+    const [jurusanList, setJurusanList] = useState([]);
+    const [prodiList, setProdiList] = useState([]);
+    const [kelasList, setKelasList] = useState([]);
+    const [filteredProdiList, setFilteredProdiList] = useState([]);
+    const [filteredKelasList, setFilteredKelasList] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [jurusanOptions, setJurusanOptions] = useState([]);
+    const [prodiOptions, setProdiOptions] = useState([]);
+    const [kelasOptions, setKelasOptions] = useState([]);
 
-  useEffect(() => {
-    if (user) {
-      setEditableUser({
-        ...user,
-        jurusanmahasiswa_id: Number(user.jurusanmahasiswa_id),
-        prodi_id: Number(user.prodi_id),
-        kelas_id: Number(user.kelas_id),
-      });
+    useEffect(() => {
+        if (user) {
+            setEditableUser({
+                ...user,
+                jurusanmahasiswa_id: Number(user.jurusanmahasiswa_id),
+                prodi_id: Number(user.prodi_id),
+                kelas_id: Number(user.kelas_id),
+            });
+        }
+    }, [user]);
+    useEffect(() => {
+        setLoading(true);
+        Promise.all([
+            axios.get(`http://localhost:8000/api/jurusan`),
+            axios.get(`http://localhost:8000/api/prodi`),
+            axios.get(`http://localhost:8000/api/kelasmahasiswa`),
+        ])
+            .then(([jurusanRes, prodiRes, kelasRes]) => {
+                setJurusanList(jurusanRes.data);
+                setProdiList(prodiRes.data || []);
+                setKelasList(kelasRes.data || []);
+            })
+            .catch((err) => {
+                console.error("Gagal mengambil data:", err);
+            })
+            .finally(() => setLoading(false));
+    }, []);
+
+    useEffect(() => {
+        const filteredProdi = editableUser.jurusanmahasiswa_id
+            ? prodiList.filter(
+                  (p) =>
+                      Number(p.id_jurusan) ===
+                      Number(editableUser.jurusanmahasiswa_id)
+              )
+            : [];
+        setFilteredProdiList(filteredProdi);
+    }, [editableUser.jurusanmahasiswa_id, prodiList]);
+
+    useEffect(() => {
+        const filteredKelas = editableUser.prodi_id
+            ? kelasList.filter((k) => k.prodi_id === editableUser.prodi_id)
+            : [];
+        setFilteredKelasList(filteredKelas);
+    }, [editableUser.prodi_id, kelasList]);
+
+    useEffect(() => {
+        setJurusanOptions(
+            jurusanList.map((j) => ({
+                value: j.id,
+                label: j.namajurusan,
+            }))
+        );
+    }, [jurusanList]);
+
+    useEffect(() => {
+        setProdiOptions(
+            filteredProdiList.map((p) => ({
+                value: p.id,
+                label: p.namaprodi,
+            }))
+        );
+    }, [filteredProdiList]);
+
+    useEffect(() => {
+        setKelasOptions(
+            filteredKelasList.map((k) => ({
+                value: k.id,
+                label: k.nama,
+            }))
+        );
+    }, [filteredKelasList]);
+
+    const getInitials = (name) => {
+        if (!name) return "?";
+        return name
+            .split(" ")
+            .map((n) => n[0])
+            .join("")
+            .toUpperCase();
+    };
+
+    const getPhotoUrl = (user) => {
+        if (!user || !user.foto) return null;
+        return `http://localhost:8000/storage/${user.foto.replace(/\\/g, "/")}`;
+    };
+
+    const photoUrl = getPhotoUrl(user);
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+    const handleSaveChanges = async () => {
+        const formData = new FormData();
+        formData.append("username", editableUser.username);
+        formData.append("nama_lengkap", editableUser.nama_lengkap);
+        formData.append(
+            "jurusanmahasiswa_id",
+            editableUser.jurusanmahasiswa_id || ""
+        );
+        formData.append("prodi_id", editableUser.prodi_id || "");
+        formData.append("kelas_id", editableUser.kelas_id || "");
+        formData.append("nim", editableUser.nim || "");
+        formData.append("smester", editableUser.smester);
+        formData.append("notlp", editableUser.notlp);
+
+        const fileInput = document.getElementById("file-input");
+        if (fileInput.files.length > 0) {
+            formData.append("foto", fileInput.files[0]);
+        }
+
+        formData.append("_method", "PUT");
+
+        try {
+            const response = await axios.post(
+                `http://localhost:8000/api/user/${user.id}`,
+                formData
+            );
+
+            if (response.status !== 200) {
+                swal("Gagal!", "Gagal memperbarui profile.", "error");
+                return;
+            }
+
+            const updatedUser = {
+                ...response.data.data,
+                jurusanmahasiswa_id: Number(
+                    response.data.data.jurusanmahasiswa_id
+                ),
+                prodi_id: Number(response.data.data.prodi_id),
+                kelas_id: Number(response.data.data.kelas_id),
+            };
+            setUser(updatedUser);
+            setEditableUser(updatedUser);
+            localStorage.setItem("user", JSON.stringify(updatedUser));
+            window.dispatchEvent(new Event("user-updated"));
+            setImagePreview(null);
+            swal(
+                "Berhasil!",
+                response.data.message || "Perubahan berhasil disimpan.",
+                "success"
+            );
+        } catch (err) {
+            const errorList = err.response?.data?.errors || [];
+            const combinedErrors = Array.isArray(errorList)
+                ? errorList.join("\n")
+                : errorList;
+
+            swal("Validasi Gagal", combinedErrors, "error");
+        }
+    };
+
+    if (loading) {
+        return <SkeletonProfileCard open={open} />;
     }
-  }, [user]);
-  useEffect(() => {
-    setLoading(true);
-    Promise.all([axios.get(`http://localhost:8000/api/jurusan`), axios.get(`http://localhost:8000/api/prodi`), axios.get(`http://localhost:8000/api/kelasmahasiswa`)])
-      .then(([jurusanRes, prodiRes, kelasRes]) => {
-        setJurusanList(jurusanRes.data); // langsung data (sesuaikan jika API beda struktur)
-        setProdiList(prodiRes.data || []);
-        setKelasList(kelasRes.data || []);
-      })
-      .catch((err) => {
-        console.error("Gagal mengambil data:", err);
-      })
-      .finally(() => setLoading(false));
-  }, []);
 
-  useEffect(() => {
-    const filteredProdi = editableUser.jurusanmahasiswa_id ? prodiList.filter((p) => Number(p.id_jurusan) === Number(editableUser.jurusanmahasiswa_id)) : [];
-    setFilteredProdiList(filteredProdi);
-  }, [editableUser.jurusanmahasiswa_id, prodiList]);
-
-  useEffect(() => {
-    const filteredKelas = editableUser.prodi_id ? kelasList.filter((k) => k.prodi_id === editableUser.prodi_id) : [];
-    setFilteredKelasList(filteredKelas);
-  }, [editableUser.prodi_id, kelasList]);
-
-  useEffect(() => {
-    setJurusanOptions(
-      jurusanList.map((j) => ({
-        value: j.id,
-        label: j.namajurusan,
-      }))
-    );
-  }, [jurusanList]);
-
-  useEffect(() => {
-    setProdiOptions(
-      filteredProdiList.map((p) => ({
-        value: p.id,
-        label: p.namaprodi,
-      }))
-    );
-  }, [filteredProdiList]);
-
-  useEffect(() => {
-    setKelasOptions(
-      filteredKelasList.map((k) => ({
-        value: k.id,
-        label: k.nama,
-      }))
-    );
-  }, [filteredKelasList]);
-
-  const getInitials = (name) => {
-    if (!name) return "?";
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
-  };
-
-  const getPhotoUrl = (user) => {
-    if (!user || !user.foto) return null;
-    return `http://localhost:8000/storage/${user.foto.replace(/\\/g, "/")}`;
-  };
-
-  const photoUrl = getPhotoUrl(user);
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-  const handleSaveChanges = async () => {
-    const formData = new FormData();
-    formData.append("username", editableUser.username);
-    formData.append("nama_lengkap", editableUser.nama_lengkap);
-    formData.append("jurusanmahasiswa_id", editableUser.jurusanmahasiswa_id || "");
-    formData.append("prodi_id", editableUser.prodi_id || "");
-    formData.append("kelas_id", editableUser.kelas_id || "");
-    formData.append("nim", editableUser.nim || "");
-    formData.append("smester", editableUser.smester);
-    formData.append("notlp", editableUser.notlp);
-
-    const fileInput = document.getElementById("file-input");
-    if (fileInput.files.length > 0) {
-      formData.append("foto", fileInput.files[0]);
-    }
-
-    formData.append("_method", "PUT");
-
-    try {
-      const response = await axios.post(`http://localhost:8000/api/user/${user.id}`, formData);
-
-      if (response.status !== 200) {
-        swal("Gagal!", "Gagal memperbarui profile.", "error");
-        return;
-      }
-
-      // Perbarui state editableUser dan user
-      const updatedUser = {
-        ...response.data.data,
-        jurusanmahasiswa_id: Number(response.data.data.jurusanmahasiswa_id),
-        prodi_id: Number(response.data.data.prodi_id),
-        kelas_id: Number(response.data.data.kelas_id),
-      };
-      setUser(updatedUser);
-      setEditableUser(updatedUser);
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-      // Notify global state user telah diperbarui
-      window.dispatchEvent(new Event("user-updated"));
-      setImagePreview(null);
-      // ✅ Tampilkan pesan sukses dari backend
-      swal("Berhasil!", response.data.message || "Perubahan berhasil disimpan.", "success");
-    } catch (err) {
-      // ✅ Tangani jika pesan error dikirim dari backend
-      const errorList = err.response?.data?.errors || [];
-      const combinedErrors = Array.isArray(errorList) ? errorList.join("\n") : errorList;
-
-      swal("Validasi Gagal", combinedErrors, "error");
-    }
-  };
-
-  if (loading) {
-    return <SkeletonProfileCard open={open} />;
-  }
-
-  return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: { xs: "column", md: "row" },
-        gap: 3,
-        justifyContent: "center",
-        alignItems: "flex-start",
-        px: 0,
-        mt: 0,
-      }}
-    >
-      <Card
-        sx={{
-          width: {
-            xs: "80%", // handphone
-            sm: "88%", // tablet
-            md: open ? "480px" : "595px", // tergantung sidebar
-          },
-          transition: "width 0.3s ease",
-          borderRadius: 2,
-          px: 3,
-          py: 1,
-          background: "linear-gradient(to bottom, #ffffff, #f0f4f9)",
-          boxShadow: "0 8px 24px rgba(0, 0, 0, 0.12)",
-          transition: "all 0.3s ease",
-          "&:hover": {
-            boxShadow: "0 12px 28px rgba(0, 0, 0, 0.15)",
-            transform: "translateY(-4px)",
-          },
-        }}
-      >
-        {/* Left: Avatar & button */}
+    return (
         <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center", // Mengatur agar avatar dan tombol terpusat secara horizontal
-            justifyContent: "center", // Mengatur agar avatar dan tombol terpusat secara vertikal
-            position: "relative",
-          }}
-        >
-          {imagePreview ? (
-            <Avatar alt="Profile Preview" src={imagePreview} sx={{ width: 140, height: 140, boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }} />
-          ) : photoUrl ? (
-            <Avatar alt="Profile" src={photoUrl} sx={{ width: 140, height: 140, boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }} />
-          ) : (
-            <Avatar
-              sx={{
-                width: 140,
-                height: 140,
-                bgcolor: "primary.main",
-                fontSize: 48,
-                fontWeight: "bold",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-              }}
-            >
-              {getInitials(user.username)}
-            </Avatar>
-          )}
-
-          <Button
-            variant="outlined"
-            startIcon={<FaCameraRotate style={{ fontSize: "14px" }} />}
-            onClick={() => document.getElementById("file-input").click()}
             sx={{
-              mt: 1,
-              mb: 1,
-              borderRadius: 2,
-              textTransform: "none",
-              fontWeight: 600,
-              fontSize: "10px !important", // Force the font size to be smaller
-              px: 1.5, // Padding kiri dan kanan
-              width: "auto", // Mengubah lebar menjadi auto (tombol akan menyesuaikan dengan konten)
-              "&:hover": { bgcolor: "primary.light", color: "white" },
-              boxShadow: "0 1px 6px rgba(0,0,0,0.1)",
+                display: "flex",
+                flexDirection: { xs: "column", md: "row" },
+                gap: 3,
+                justifyContent: "center",
+                alignItems: "flex-start",
+                px: 0,
+                mt: 0,
             }}
-          >
-            Ubah Foto
-          </Button>
-          <input type="file" id="file-input" style={{ display: "none" }} onChange={handleImageChange} accept="image/*" />
-        </Box>
-        <Typography
-          variant="caption"
-          color="text.secondary"
-          sx={{
-            userSelect: "none",
-            display: "block",
-            mb: 1,
-            fontStyle: "italic",
-            fontSize: "10px",
-            lineHeight: "1.2",
-            textAlign: "center", // Centers the text horizontally
-          }}
         >
-          Unggah foto profil dalam format
-          <br />
-          JPG/JPEG/PNG
-        </Typography>
+            <Card
+                sx={{
+                    width: {
+                        xs: "80%",
+                        sm: "88%",
+                        md: open ? "480px" : "595px",
+                    },
+                    transition: "width 0.3s ease",
+                    borderRadius: 2,
+                    px: 3,
+                    py: 1,
+                    background: "linear-gradient(to bottom, #ffffff, #f0f4f9)",
+                    boxShadow: "0 8px 24px rgba(0, 0, 0, 0.12)",
+                    transition: "all 0.3s ease",
+                    "&:hover": {
+                        boxShadow: "0 12px 28px rgba(0, 0, 0, 0.15)",
+                        transform: "translateY(-4px)",
+                    },
+                }}
+            >
+                <Box
+                    sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        position: "relative",
+                    }}
+                >
+                    {imagePreview ? (
+                        <Avatar
+                            alt="Profile Preview"
+                            src={imagePreview}
+                            sx={{
+                                width: 140,
+                                height: 140,
+                                boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                            }}
+                        />
+                    ) : photoUrl ? (
+                        <Avatar
+                            alt="Profile"
+                            src={photoUrl}
+                            sx={{
+                                width: 140,
+                                height: 140,
+                                boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                            }}
+                        />
+                    ) : (
+                        <Avatar
+                            sx={{
+                                width: 140,
+                                height: 140,
+                                bgcolor: "primary.main",
+                                fontSize: 48,
+                                fontWeight: "bold",
+                                boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                            }}
+                        >
+                            {getInitials(user.username)}
+                        </Avatar>
+                    )}
 
-        {/* Right: form with react-select */}
-        <Box
-          sx={{
-            flexGrow: 1,
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 2,
-          }}
-        >
-          <Box sx={{ gridColumn: "span 1" }}>
-            <Typography
-              variant="body2"
-              sx={{
-                mb: 0.5,
-                fontWeight: 600,
-                color: "#4f4f4f", // abu-abu gelap
-              }}
-            >
-              Username
-              <Typography
-                component="span"
-                sx={{
-                  color: "#d32f2f", // merah tapi lebih soft daripada 'error'
-                  fontSize: "0.95rem", // lebih kecil
-                  ml: 1,
-                  lineHeight: 1,
-                }}
-              >
-                *
-              </Typography>
-            </Typography>
-            <TextField
-              size="small"
-              variant="outlined"
-              value={editableUser.username}
-              onChange={(e) => setEditableUser({ ...editableUser, username: e.target.value })}
-              fullWidth
-              placeholder="Masukkan Username..."
-              InputProps={{
-                disableUnderline: false,
-              }}
-              sx={{
-                height: "39px",
-                borderRadius: 1,
-                backgroundColor: "#fff",
-                boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
-                "& .MuiInputBase-input": {
-                  color: "#666", // ← Warna abu-abu untuk value (teks yang diketik)
-                  textAlign: "left",
-                  fontSize: "14px !important", // Force the font size to be smaller
-                },
-                "& input::placeholder": {
-                  fontSize: "14px",
-                  opacity: 1,
-                  color: "#888",
-                },
-                "& .MuiOutlinedInput-root": {
-                  height: "39px",
-                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#0C20B5",
-                    borderWidth: "1px",
-                  },
-                  "& fieldset": {
-                    borderColor: "#ccc",
-                    borderRadius: 1,
-                  },
-                  "&:hover fieldset": {
-                    borderColor: "#0C20B5",
-                    borderRadius: 1,
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: "#0C20B5",
-                    borderRadius: 1,
-                  },
-                },
-              }}
-            />
-          </Box>
-          <Box sx={{ gridColumn: "span 1" }}>
-            <Typography
-              variant="body2"
-              sx={{
-                mb: 0.5,
-                fontWeight: 600,
-                color: "#4f4f4f", // abu-abu gelap
-              }}
-            >
-              Nama Lengkap
-              <Typography
-                component="span"
-                sx={{
-                  color: "#d32f2f", // merah tapi lebih soft daripada 'error'
-                  fontSize: "0.95rem", // lebih kecil
-                  ml: 1,
-                  lineHeight: 1,
-                }}
-              >
-                *
-              </Typography>
-            </Typography>
-            <TextField
-              size="small"
-              variant="outlined"
-              value={editableUser.nama_lengkap}
-              onChange={(e) => setEditableUser({ ...editableUser, nama_lengkap: e.target.value })}
-              fullWidth
-              placeholder="Masukkan Nama lengkap..."
-              InputProps={{
-                disableUnderline: false,
-              }}
-              sx={{
-                height: "39px",
-                borderRadius: 1,
-                backgroundColor: "#fff",
-                boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
-                "& .MuiInputBase-input": {
-                  color: "#666", // ← Warna abu-abu untuk value (teks yang diketik)
-                  textAlign: "left",
-                  fontSize: "14px !important", // Force the font size to be smaller
-                },
-                "& input::placeholder": {
-                  fontSize: "14px",
-                  opacity: 1,
-                  color: "#888",
-                },
-                "& .MuiOutlinedInput-root": {
-                  height: "39px",
-                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#0C20B5",
-                    borderWidth: "1px",
-                  },
-                  "& fieldset": {
-                    borderColor: "#ccc",
-                    borderRadius: 1,
-                  },
-                  "&:hover fieldset": {
-                    borderColor: "#0C20B5",
-                    borderRadius: 1,
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: "#0C20B5",
-                    borderRadius: 1,
-                  },
-                },
-              }}
-            />
-          </Box>
-          {/* React-select jurusan */}
-          <Box sx={{ gridColumn: "span 1" }}>
-            <Typography
-              variant="body2"
-              sx={{
-                mb: 0.5,
-                fontWeight: 600,
-                color: "#4f4f4f", // abu-abu gelap
-              }}
-            >
-              Jurusan
-              <Typography
-                component="span"
-                sx={{
-                  color: "#d32f2f", // merah tapi lebih soft daripada 'error'
-                  fontSize: "0.95rem", // lebih kecil
-                  ml: 1,
-                  lineHeight: 1,
-                }}
-              >
-                *
-              </Typography>
-            </Typography>
-            <Select
-              options={jurusanOptions}
-              value={jurusanOptions.find((option) => option.value === editableUser?.jurusanmahasiswa_id) || null}
-              onChange={(selected) => {
-                const newUser = { ...editableUser, jurusanmahasiswa_id: selected?.value || null, prodi_id: null, kelas_id: null };
-                setEditableUser(newUser); // Perbarui state local
-                setUser(newUser); // Pastikan state global user juga terupdate
-              }}
-              placeholder="Pilih Jurusan..."
-              isClearable
-              styles={customSelectStyles}
-            />
-          </Box>
+                    <Button
+                        variant="outlined"
+                        startIcon={
+                            <FaCameraRotate style={{ fontSize: "14px" }} />
+                        }
+                        onClick={() =>
+                            document.getElementById("file-input").click()
+                        }
+                        sx={{
+                            mt: 1,
+                            mb: 1,
+                            borderRadius: 2,
+                            textTransform: "none",
+                            fontWeight: 600,
+                            fontSize: "10px !important",
+                            px: 1.5,
+                            width: "auto",
+                            "&:hover": {
+                                bgcolor: "primary.light",
+                                color: "white",
+                            },
+                            boxShadow: "0 1px 6px rgba(0,0,0,0.1)",
+                        }}
+                    >
+                        Ubah Foto
+                    </Button>
+                    <input
+                        type="file"
+                        id="file-input"
+                        style={{ display: "none" }}
+                        onChange={handleImageChange}
+                        accept="image/*"
+                    />
+                </Box>
+                <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{
+                        userSelect: "none",
+                        display: "block",
+                        mb: 1,
+                        fontStyle: "italic",
+                        fontSize: "10px",
+                        lineHeight: "1.2",
+                        textAlign: "center",
+                    }}
+                >
+                    Unggah foto profil dalam format
+                    <br />
+                    JPG/JPEG/PNG
+                </Typography>
 
-          {/* React-select prodi */}
-          <Box sx={{ gridColumn: "span 1" }}>
-            <Typography
-              variant="body2"
-              sx={{
-                mb: 0.5,
-                fontWeight: 600,
-                color: "#4f4f4f", // abu-abu gelap
-              }}
-            >
-              Prodi
-              <Typography
-                component="span"
-                sx={{
-                  color: "#d32f2f", // merah tapi lebih soft daripada 'error'
-                  fontSize: "0.95rem", // lebih kecil
-                  ml: 1,
-                  lineHeight: 1,
-                }}
-              >
-                *
-              </Typography>
-            </Typography>
-            <Select
-              options={prodiOptions}
-              value={prodiOptions.find((p) => p.value === editableUser.prodi_id) || null}
-              onChange={(selected) =>
-                setEditableUser({
-                  ...editableUser,
-                  prodi_id: selected?.value || null,
-                  kelas_id: null,
-                })
-              }
-              placeholder="Pilih Prodi..."
-              isDisabled={!editableUser.jurusanmahasiswa_id}
-              isClearable
-              styles={customSelectStyles}
-            />
-          </Box>
+                <Box
+                    sx={{
+                        flexGrow: 1,
+                        display: "grid",
+                        gridTemplateColumns: "1fr 1fr",
+                        gap: 2,
+                    }}
+                >
+                    <Box sx={{ gridColumn: "span 1" }}>
+                        <Typography
+                            variant="body2"
+                            sx={{
+                                mb: 0.5,
+                                fontWeight: 600,
+                                color: "#4f4f4f",
+                            }}
+                        >
+                            Username
+                            <Typography
+                                component="span"
+                                sx={{
+                                    color: "#d32f2f",
+                                    fontSize: "0.95rem",
+                                    ml: 1,
+                                    lineHeight: 1,
+                                }}
+                            >
+                                *
+                            </Typography>
+                        </Typography>
+                        <TextField
+                            size="small"
+                            variant="outlined"
+                            value={editableUser.username}
+                            onChange={(e) =>
+                                setEditableUser({
+                                    ...editableUser,
+                                    username: e.target.value,
+                                })
+                            }
+                            fullWidth
+                            placeholder="Masukkan Username..."
+                            InputProps={{
+                                disableUnderline: false,
+                            }}
+                            sx={{
+                                height: "39px",
+                                borderRadius: 1,
+                                backgroundColor: "#fff",
+                                boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+                                "& .MuiInputBase-input": {
+                                    color: "#666",
+                                    textAlign: "left",
+                                    fontSize: "14px !important",
+                                },
+                                "& input::placeholder": {
+                                    fontSize: "14px",
+                                    opacity: 1,
+                                    color: "#888",
+                                },
+                                "& .MuiOutlinedInput-root": {
+                                    height: "39px",
+                                    "&.Mui-focused .MuiOutlinedInput-notchedOutline":
+                                        {
+                                            borderColor: "#0C20B5",
+                                            borderWidth: "1px",
+                                        },
+                                    "& fieldset": {
+                                        borderColor: "#ccc",
+                                        borderRadius: 1,
+                                    },
+                                    "&:hover fieldset": {
+                                        borderColor: "#0C20B5",
+                                        borderRadius: 1,
+                                    },
+                                    "&.Mui-focused fieldset": {
+                                        borderColor: "#0C20B5",
+                                        borderRadius: 1,
+                                    },
+                                },
+                            }}
+                        />
+                    </Box>
+                    <Box sx={{ gridColumn: "span 1" }}>
+                        <Typography
+                            variant="body2"
+                            sx={{
+                                mb: 0.5,
+                                fontWeight: 600,
+                                color: "#4f4f4f",
+                            }}
+                        >
+                            Nama Lengkap
+                            <Typography
+                                component="span"
+                                sx={{
+                                    color: "#d32f2f",
+                                    fontSize: "0.95rem",
+                                    ml: 1,
+                                    lineHeight: 1,
+                                }}
+                            >
+                                *
+                            </Typography>
+                        </Typography>
+                        <TextField
+                            size="small"
+                            variant="outlined"
+                            value={editableUser.nama_lengkap}
+                            onChange={(e) =>
+                                setEditableUser({
+                                    ...editableUser,
+                                    nama_lengkap: e.target.value,
+                                })
+                            }
+                            fullWidth
+                            placeholder="Masukkan Nama lengkap..."
+                            InputProps={{
+                                disableUnderline: false,
+                            }}
+                            sx={{
+                                height: "39px",
+                                borderRadius: 1,
+                                backgroundColor: "#fff",
+                                boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+                                "& .MuiInputBase-input": {
+                                    color: "#666",
+                                    textAlign: "left",
+                                    fontSize: "14px !important",
+                                },
+                                "& input::placeholder": {
+                                    fontSize: "14px",
+                                    opacity: 1,
+                                    color: "#888",
+                                },
+                                "& .MuiOutlinedInput-root": {
+                                    height: "39px",
+                                    "&.Mui-focused .MuiOutlinedInput-notchedOutline":
+                                        {
+                                            borderColor: "#0C20B5",
+                                            borderWidth: "1px",
+                                        },
+                                    "& fieldset": {
+                                        borderColor: "#ccc",
+                                        borderRadius: 1,
+                                    },
+                                    "&:hover fieldset": {
+                                        borderColor: "#0C20B5",
+                                        borderRadius: 1,
+                                    },
+                                    "&.Mui-focused fieldset": {
+                                        borderColor: "#0C20B5",
+                                        borderRadius: 1,
+                                    },
+                                },
+                            }}
+                        />
+                    </Box>
+                    {/* React-select jurusan */}
+                    <Box sx={{ gridColumn: "span 1" }}>
+                        <Typography
+                            variant="body2"
+                            sx={{
+                                mb: 0.5,
+                                fontWeight: 600,
+                                color: "#4f4f4f",
+                            }}
+                        >
+                            Jurusan
+                            <Typography
+                                component="span"
+                                sx={{
+                                    color: "#d32f2f",
+                                    fontSize: "0.95rem",
+                                    ml: 1,
+                                    lineHeight: 1,
+                                }}
+                            >
+                                *
+                            </Typography>
+                        </Typography>
+                        <Select
+                            options={jurusanOptions}
+                            value={
+                                jurusanOptions.find(
+                                    (option) =>
+                                        option.value ===
+                                        editableUser?.jurusanmahasiswa_id
+                                ) || null
+                            }
+                            onChange={(selected) => {
+                                const newUser = {
+                                    ...editableUser,
+                                    jurusanmahasiswa_id:
+                                        selected?.value || null,
+                                    prodi_id: null,
+                                    kelas_id: null,
+                                };
+                                setEditableUser(newUser);
+                                setUser(newUser);
+                            }}
+                            placeholder="Pilih Jurusan..."
+                            isClearable
+                            styles={customSelectStyles}
+                        />
+                    </Box>
 
-          {/* React-select kelas */}
-          <Box sx={{ gridColumn: "span 1" }}>
-            <Typography
-              variant="body2"
-              sx={{
-                mb: 0.5,
-                fontWeight: 600,
-                color: "#4f4f4f", // abu-abu gelap
-              }}
-            >
-              Kelas
-              <Typography
-                component="span"
-                sx={{
-                  color: "#d32f2f", // merah tapi lebih soft daripada 'error'
-                  fontSize: "0.95rem", // lebih kecil
-                  ml: 1,
-                  lineHeight: 1,
-                }}
-              >
-                *
-              </Typography>
-            </Typography>
-            <Select
-              options={kelasOptions}
-              value={kelasOptions.find((k) => k.value === editableUser.kelas_id) || null}
-              onChange={(selected) =>
-                setEditableUser({
-                  ...editableUser,
-                  kelas_id: selected?.value || null,
-                })
-              }
-              placeholder="Pilih Kelas..."
-              isDisabled={!editableUser.prodi_id}
-              isClearable
-              styles={customSelectStyles}
-            />
-          </Box>
-          <Box sx={{ gridColumn: "span 1" }}>
-            <Typography
-              variant="body2"
-              sx={{
-                mb: 0.5,
-                fontWeight: 600,
-                color: "#4f4f4f", // abu-abu gelap
-              }}
-            >
-              Nim
-              <Typography
-                component="span"
-                sx={{
-                  color: "#d32f2f", // merah tapi lebih soft daripada 'error'
-                  fontSize: "0.95rem", // lebih kecil
-                  ml: 1,
-                  lineHeight: 1,
-                }}
-              >
-                *
-              </Typography>
-            </Typography>
-            <TextField
-              size="small"
-              variant="outlined"
-              value={editableUser.nim || ""}
-              onChange={(e) => setEditableUser({ ...editableUser, nim: e.target.value })}
-              fullWidth
-              placeholder="Masukkan Nim..."
-              InputProps={{
-                disableUnderline: false,
-              }}
-              sx={{
-                height: "39px",
-                borderRadius: 1,
-                backgroundColor: "#fff",
-                boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
-                "& .MuiInputBase-input": {
-                  color: "#666", // ← Warna abu-abu untuk value (teks yang diketik)
-                  textAlign: "left",
-                  fontSize: "14px !important", // Force the font size to be smaller
-                },
-                "& input::placeholder": {
-                  fontSize: "14px",
-                  opacity: 1,
-                  color: "#888",
-                },
-                "& .MuiOutlinedInput-root": {
-                  height: "39px",
-                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#0C20B5",
-                    borderWidth: "1px",
-                  },
-                  "& fieldset": {
-                    borderColor: "#ccc",
-                    borderRadius: 1,
-                  },
-                  "&:hover fieldset": {
-                    borderColor: "#0C20B5",
-                    borderRadius: 1,
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: "#0C20B5",
-                    borderRadius: 1,
-                  },
-                },
-              }}
-            />
-          </Box>
-          <Box sx={{ gridColumn: "span 1" }}>
-            <Typography
-              variant="body2"
-              sx={{
-                mb: 0.5,
-                fontWeight: 600,
-                color: "#4f4f4f", // abu-abu gelap
-              }}
-            >
-              Semester
-              <Typography
-                component="span"
-                sx={{
-                  color: "#d32f2f", // merah tapi lebih soft daripada 'error'
-                  fontSize: "0.95rem", // lebih kecil
-                  ml: 1,
-                  lineHeight: 1,
-                }}
-              >
-                *
-              </Typography>
-            </Typography>
-            <TextField
-              size="small"
-              variant="outlined"
-              value={editableUser.smester || ""}
-              onChange={(e) => setEditableUser({ ...editableUser, smester: e.target.value })}
-              fullWidth
-              placeholder="Masukkan Semester..."
-              InputProps={{
-                disableUnderline: false,
-              }}
-              sx={{
-                height: "39px",
-                borderRadius: 1,
-                backgroundColor: "#fff",
-                boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
-                "& .MuiInputBase-input": {
-                  color: "#666", // ← Warna abu-abu untuk value (teks yang diketik)
-                  textAlign: "left",
-                  fontSize: "14px !important", // Force the font size to be smaller
-                },
-                "& input::placeholder": {
-                  fontSize: "14px",
-                  opacity: 1,
-                  color: "#888",
-                },
-                "& .MuiOutlinedInput-root": {
-                  height: "39px",
-                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#0C20B5",
-                    borderWidth: "1px",
-                  },
-                  "& fieldset": {
-                    borderColor: "#ccc",
-                    borderRadius: 1,
-                  },
-                  "&:hover fieldset": {
-                    borderColor: "#0C20B5",
-                    borderRadius: 1,
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: "#0C20B5",
-                    borderRadius: 1,
-                  },
-                },
-              }}
-            />
-          </Box>
-          <Box sx={{ gridColumn: "span 1" }}>
-            <Typography
-              variant="body2"
-              sx={{
-                mb: 0.5,
-                fontWeight: 600,
-                color: "#4f4f4f", // abu-abu gelap
-              }}
-            >
-              No.Telpon
-              <Typography
-                component="span"
-                sx={{
-                  color: "#d32f2f", // merah tapi lebih soft daripada 'error'
-                  fontSize: "0.95rem", // lebih kecil
-                  ml: 1,
-                  lineHeight: 1,
-                }}
-              >
-                *
-              </Typography>
-            </Typography>
-            <TextField
-              size="small"
-              variant="outlined"
-              value={editableUser.notlp || ""}
-              onChange={(e) => setEditableUser({ ...editableUser, notlp: e.target.value })}
-              fullWidth
-              placeholder="Masukkan No.Telpon..."
-              InputProps={{
-                disableUnderline: false,
-              }}
-              sx={{
-                height: "39px",
-                borderRadius: 1,
-                backgroundColor: "#fff",
-                boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
-                "& .MuiInputBase-input": {
-                  color: "#666", // ← Warna abu-abu untuk value (teks yang diketik)
-                  textAlign: "left",
-                  color: "#666", // ← Warna abu-abu untuk value (teks yang diketik)
-                  fontSize: "14px !important", // Force the font size to be smaller
-                },
-                "& input::placeholder": {
-                  fontSize: "14px",
-                  opacity: 1,
-                  color: "#888",
-                },
-                "& .MuiOutlinedInput-root": {
-                  height: "39px",
-                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                    borderColor: "#0C20B5",
-                    borderWidth: "1px",
-                  },
-                  "& fieldset": {
-                    borderColor: "#ccc",
-                    borderRadius: 1,
-                  },
-                  "&:hover fieldset": {
-                    borderColor: "#0C20B5",
-                    borderRadius: 1,
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: "#0C20B5",
-                    borderRadius: 1,
-                  },
-                },
-              }}
-            />
-          </Box>
-          {/* Spacer for alignment */}
-          <Box sx={{ gridColumn: "span 2", textAlign: "right", mt: 0, mb: 1 }}>
-            <Button
-              variant="contained"
-              size="medium"
-              onClick={handleSaveChanges}
-              sx={{
-                borderRadius: 2,
-                px: 2,
-                fontSize: "14px !important", // Force the font size to be smaller
-                fontWeight: 600,
-                textTransform: "none",
-                boxShadow: "0 4px 10px rgba(25, 118, 210, 0.35)",
-              }}
-            >
-              Simpan
-            </Button>
-          </Box>
+                    {/* React-select prodi */}
+                    <Box sx={{ gridColumn: "span 1" }}>
+                        <Typography
+                            variant="body2"
+                            sx={{
+                                mb: 0.5,
+                                fontWeight: 600,
+                                color: "#4f4f4f",
+                            }}
+                        >
+                            Prodi
+                            <Typography
+                                component="span"
+                                sx={{
+                                    color: "#d32f2f",
+                                    fontSize: "0.95rem",
+                                    ml: 1,
+                                    lineHeight: 1,
+                                }}
+                            >
+                                *
+                            </Typography>
+                        </Typography>
+                        <Select
+                            options={prodiOptions}
+                            value={
+                                prodiOptions.find(
+                                    (p) => p.value === editableUser.prodi_id
+                                ) || null
+                            }
+                            onChange={(selected) =>
+                                setEditableUser({
+                                    ...editableUser,
+                                    prodi_id: selected?.value || null,
+                                    kelas_id: null,
+                                })
+                            }
+                            placeholder="Pilih Prodi..."
+                            isDisabled={!editableUser.jurusanmahasiswa_id}
+                            isClearable
+                            styles={customSelectStyles}
+                        />
+                    </Box>
+
+                    {/* React-select kelas */}
+                    <Box sx={{ gridColumn: "span 1" }}>
+                        <Typography
+                            variant="body2"
+                            sx={{
+                                mb: 0.5,
+                                fontWeight: 600,
+                                color: "#4f4f4f",
+                            }}
+                        >
+                            Kelas
+                            <Typography
+                                component="span"
+                                sx={{
+                                    color: "#d32f2f",
+                                    fontSize: "0.95rem",
+                                    ml: 1,
+                                    lineHeight: 1,
+                                }}
+                            >
+                                *
+                            </Typography>
+                        </Typography>
+                        <Select
+                            options={kelasOptions}
+                            value={
+                                kelasOptions.find(
+                                    (k) => k.value === editableUser.kelas_id
+                                ) || null
+                            }
+                            onChange={(selected) =>
+                                setEditableUser({
+                                    ...editableUser,
+                                    kelas_id: selected?.value || null,
+                                })
+                            }
+                            placeholder="Pilih Kelas..."
+                            isDisabled={!editableUser.prodi_id}
+                            isClearable
+                            styles={customSelectStyles}
+                        />
+                    </Box>
+                    <Box sx={{ gridColumn: "span 1" }}>
+                        <Typography
+                            variant="body2"
+                            sx={{
+                                mb: 0.5,
+                                fontWeight: 600,
+                                color: "#4f4f4f",
+                            }}
+                        >
+                            Nim
+                            <Typography
+                                component="span"
+                                sx={{
+                                    color: "#d32f2f",
+                                    fontSize: "0.95rem",
+                                    ml: 1,
+                                    lineHeight: 1,
+                                }}
+                            >
+                                *
+                            </Typography>
+                        </Typography>
+                        <TextField
+                            size="small"
+                            variant="outlined"
+                            value={editableUser.nim || ""}
+                            onChange={(e) =>
+                                setEditableUser({
+                                    ...editableUser,
+                                    nim: e.target.value,
+                                })
+                            }
+                            fullWidth
+                            placeholder="Masukkan Nim..."
+                            InputProps={{
+                                disableUnderline: false,
+                            }}
+                            sx={{
+                                height: "39px",
+                                borderRadius: 1,
+                                backgroundColor: "#fff",
+                                boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+                                "& .MuiInputBase-input": {
+                                    color: "#666",
+                                    textAlign: "left",
+                                    fontSize: "14px !important",
+                                },
+                                "& input::placeholder": {
+                                    fontSize: "14px",
+                                    opacity: 1,
+                                    color: "#888",
+                                },
+                                "& .MuiOutlinedInput-root": {
+                                    height: "39px",
+                                    "&.Mui-focused .MuiOutlinedInput-notchedOutline":
+                                        {
+                                            borderColor: "#0C20B5",
+                                            borderWidth: "1px",
+                                        },
+                                    "& fieldset": {
+                                        borderColor: "#ccc",
+                                        borderRadius: 1,
+                                    },
+                                    "&:hover fieldset": {
+                                        borderColor: "#0C20B5",
+                                        borderRadius: 1,
+                                    },
+                                    "&.Mui-focused fieldset": {
+                                        borderColor: "#0C20B5",
+                                        borderRadius: 1,
+                                    },
+                                },
+                            }}
+                        />
+                    </Box>
+                    <Box sx={{ gridColumn: "span 1" }}>
+                        <Typography
+                            variant="body2"
+                            sx={{
+                                mb: 0.5,
+                                fontWeight: 600,
+                                color: "#4f4f4f",
+                            }}
+                        >
+                            Semester
+                            <Typography
+                                component="span"
+                                sx={{
+                                    color: "#d32f2f",
+                                    fontSize: "0.95rem",
+                                    ml: 1,
+                                    lineHeight: 1,
+                                }}
+                            >
+                                *
+                            </Typography>
+                        </Typography>
+                        <TextField
+                            size="small"
+                            variant="outlined"
+                            value={editableUser.smester || ""}
+                            onChange={(e) =>
+                                setEditableUser({
+                                    ...editableUser,
+                                    smester: e.target.value,
+                                })
+                            }
+                            fullWidth
+                            placeholder="Masukkan Semester..."
+                            InputProps={{
+                                disableUnderline: false,
+                            }}
+                            sx={{
+                                height: "39px",
+                                borderRadius: 1,
+                                backgroundColor: "#fff",
+                                boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+                                "& .MuiInputBase-input": {
+                                    color: "#666",
+                                    textAlign: "left",
+                                    fontSize: "14px !important",
+                                },
+                                "& input::placeholder": {
+                                    fontSize: "14px",
+                                    opacity: 1,
+                                    color: "#888",
+                                },
+                                "& .MuiOutlinedInput-root": {
+                                    height: "39px",
+                                    "&.Mui-focused .MuiOutlinedInput-notchedOutline":
+                                        {
+                                            borderColor: "#0C20B5",
+                                            borderWidth: "1px",
+                                        },
+                                    "& fieldset": {
+                                        borderColor: "#ccc",
+                                        borderRadius: 1,
+                                    },
+                                    "&:hover fieldset": {
+                                        borderColor: "#0C20B5",
+                                        borderRadius: 1,
+                                    },
+                                    "&.Mui-focused fieldset": {
+                                        borderColor: "#0C20B5",
+                                        borderRadius: 1,
+                                    },
+                                },
+                            }}
+                        />
+                    </Box>
+                    <Box sx={{ gridColumn: "span 1" }}>
+                        <Typography
+                            variant="body2"
+                            sx={{
+                                mb: 0.5,
+                                fontWeight: 600,
+                                color: "#4f4f4f",
+                            }}
+                        >
+                            No.Telpon
+                            <Typography
+                                component="span"
+                                sx={{
+                                    color: "#d32f2f",
+                                    fontSize: "0.95rem",
+                                    ml: 1,
+                                    lineHeight: 1,
+                                }}
+                            >
+                                *
+                            </Typography>
+                        </Typography>
+                        <TextField
+                            size="small"
+                            variant="outlined"
+                            value={editableUser.notlp || ""}
+                            onChange={(e) =>
+                                setEditableUser({
+                                    ...editableUser,
+                                    notlp: e.target.value,
+                                })
+                            }
+                            fullWidth
+                            placeholder="Masukkan No.Telpon..."
+                            InputProps={{
+                                disableUnderline: false,
+                            }}
+                            sx={{
+                                height: "39px",
+                                borderRadius: 1,
+                                backgroundColor: "#fff",
+                                boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+                                "& .MuiInputBase-input": {
+                                    color: "#666",
+                                    textAlign: "left",
+                                    color: "#666",
+                                    fontSize: "14px !important",
+                                },
+                                "& input::placeholder": {
+                                    fontSize: "14px",
+                                    opacity: 1,
+                                    color: "#888",
+                                },
+                                "& .MuiOutlinedInput-root": {
+                                    height: "39px",
+                                    "&.Mui-focused .MuiOutlinedInput-notchedOutline":
+                                        {
+                                            borderColor: "#0C20B5",
+                                            borderWidth: "1px",
+                                        },
+                                    "& fieldset": {
+                                        borderColor: "#ccc",
+                                        borderRadius: 1,
+                                    },
+                                    "&:hover fieldset": {
+                                        borderColor: "#0C20B5",
+                                        borderRadius: 1,
+                                    },
+                                    "&.Mui-focused fieldset": {
+                                        borderColor: "#0C20B5",
+                                        borderRadius: 1,
+                                    },
+                                },
+                            }}
+                        />
+                    </Box>
+                    {/* Spacer for alignment */}
+                    <Box
+                        sx={{
+                            gridColumn: "span 2",
+                            textAlign: "right",
+                            mt: 0,
+                            mb: 1,
+                        }}
+                    >
+                        <Button
+                            variant="contained"
+                            size="medium"
+                            onClick={handleSaveChanges}
+                            sx={{
+                                borderRadius: 2,
+                                px: 2,
+                                fontSize: "14px !important",
+                                fontWeight: 600,
+                                textTransform: "none",
+                                boxShadow:
+                                    "0 4px 10px rgba(25, 118, 210, 0.35)",
+                            }}
+                        >
+                            Simpan
+                        </Button>
+                    </Box>
+                </Box>
+            </Card>
+            <PasswordCard user={user} open={open} />
         </Box>
-      </Card>
-      <PasswordCard user={user} open={open} />
-    </Box>
-  );
+    );
 };
 const PasswordCard = ({ user, open }) => {
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [currentPassword, setCurrentPassword] = useState("");
+    const [newPassword, setNewPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const handlePasswordUpdate = async () => {
-    if (newPassword !== confirmPassword) {
-      swal("Gagal", "Konfirmasi password tidak cocok", "error");
-      return;
-    }
+    const handlePasswordUpdate = async () => {
+        if (newPassword !== confirmPassword) {
+            swal("Gagal", "Konfirmasi password tidak cocok", "error");
+            return;
+        }
 
-    try {
-      const response = await axios.post(`http://localhost:8000/api/user/${user.id}/update-password`, {
-        current_password: currentPassword,
-        new_password: newPassword,
-        new_password_confirmation: confirmPassword,
-      });
+        try {
+            const response = await axios.post(
+                `http://localhost:8000/api/user/${user.id}/update-password`,
+                {
+                    current_password: currentPassword,
+                    new_password: newPassword,
+                    new_password_confirmation: confirmPassword,
+                }
+            );
 
-      swal("Berhasil", response.data.message || "Password berhasil diperbarui", "success");
+            swal(
+                "Berhasil",
+                response.data.message || "Password berhasil diperbarui",
+                "success"
+            );
 
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
-    } catch (err) {
-      const errors = err.response?.data?.errors || {};
-      const messages = Object.values(errors).flat().join("\n");
-      swal("Gagal", messages || "Gagal mengubah password", "error");
-    }
-  };
+            setCurrentPassword("");
+            setNewPassword("");
+            setConfirmPassword("");
+        } catch (err) {
+            const errors = err.response?.data?.errors || {};
+            const messages = Object.values(errors).flat().join("\n");
+            swal("Gagal", messages || "Gagal mengubah password", "error");
+        }
+    };
 
-  return (
-    <Card
-      sx={{
-        width: {
-          xs: "80%", // handphone
-          sm: "88%", // tablet
-          md: open ? "350px" : "450px", // tergantung sidebar
-        },
-        transition: "width 0.3s ease",
-        borderRadius: 2,
-        px: 3,
-        py: 1,
-        background: "linear-gradient(to bottom, #ffffff, #f0f4f9)",
-        boxShadow: "0 8px 24px rgba(0, 0, 0, 0.12)",
-        transition: "all 0.3s ease",
-        "&:hover": {
-          boxShadow: "0 12px 28px rgba(0, 0, 0, 0.15)",
-          transform: "translateY(-4px)",
-        },
-      }}
-    >
-      <Typography variant="body1" sx={{ mb: 0.5, fontWeight: 600 }}>
-        Form Reset Password
-      </Typography>
-      <Divider sx={{ border: 1, color: "#ccc", mt: 1, mb: 2 }} />
-      <Box sx={{ gridColumn: "span 1" }}>
-        <Typography
-          variant="body2"
-          sx={{
-            mb: 0.5,
-            fontWeight: 600,
-            color: "#4f4f4f", // abu-abu gelap
-          }}
-        >
-          Password Lama
-          <Typography
-            component="span"
+    return (
+        <Card
             sx={{
-              color: "#d32f2f", // merah tapi lebih soft daripada 'error'
-              fontSize: "0.95rem", // lebih kecil
-              ml: 1,
-              lineHeight: 1,
+                width: {
+                    xs: "80%",
+                    sm: "88%",
+                    md: open ? "350px" : "450px",
+                },
+                transition: "width 0.3s ease",
+                borderRadius: 2,
+                px: 3,
+                py: 1,
+                background: "linear-gradient(to bottom, #ffffff, #f0f4f9)",
+                boxShadow: "0 8px 24px rgba(0, 0, 0, 0.12)",
+                transition: "all 0.3s ease",
+                "&:hover": {
+                    boxShadow: "0 12px 28px rgba(0, 0, 0, 0.15)",
+                    transform: "translateY(-4px)",
+                },
             }}
-          >
-            *
-          </Typography>
-        </Typography>
-        <TextField
-          type={showCurrentPassword ? "text" : "password"}
-          variant="outlined"
-          size="small"
-          fullWidth
-          placeholder="Masukkan Password Lama..."
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton onClick={() => setShowCurrentPassword((prev) => !prev)} edge="end">
-                  {showCurrentPassword ? <VisibilityOff sx={{ fontSize: "16px" }} /> : <Visibility sx={{ fontSize: "16px" }} />}
-                </IconButton>
-              </InputAdornment>
-            ),
-            disableUnderline: false,
-          }}
-          sx={{
-            height: "39px",
-            borderRadius: 1,
-            backgroundColor: "#fff",
-            boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
-            "& .MuiInputBase-input": {
-              color: "#666", // ← Warna abu-abu untuk value (teks yang diketik)
-              textAlign: "left",
-              fontSize: "14px !important", // Force the font size to be smaller
-            },
-            "& input::placeholder": {
-              fontSize: "14px",
-              opacity: 1,
-              color: "#888",
-            },
-            "& .MuiOutlinedInput-root": {
-              height: "39px",
-              "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                borderColor: "#0C20B5",
-                borderWidth: "1px",
-              },
-              "& fieldset": {
-                borderColor: "#ccc",
-                borderRadius: 1,
-              },
-              "&:hover fieldset": {
-                borderColor: "#0C20B5",
-                borderRadius: 1,
-              },
-              "&.Mui-focused fieldset": {
-                borderColor: "#0C20B5",
-                borderRadius: 1,
-              },
-            },
-          }}
-          value={currentPassword}
-          onChange={(e) => setCurrentPassword(e.target.value)}
-        />
-      </Box>
-      <Box sx={{ gridColumn: "span 1", mt: 2 }}>
-        <Typography
-          variant="body2"
-          sx={{
-            mb: 0.5,
-            fontWeight: 600,
-            color: "#4f4f4f", // abu-abu gelap
-          }}
         >
-          Password Baru
-          <Typography
-            component="span"
-            sx={{
-              color: "#d32f2f", // merah tapi lebih soft daripada 'error'
-              fontSize: "0.95rem", // lebih kecil
-              ml: 1,
-              lineHeight: 1,
-            }}
-          >
-            *
-          </Typography>
-        </Typography>
-        <TextField
-          type={showNewPassword ? "text" : "password"}
-          variant="outlined"
-          size="small"
-          fullWidth
-          placeholder="Masukkan Password Baru..."
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton onClick={() => setShowNewPassword((prev) => !prev)} edge="end">
-                  {showNewPassword ? <VisibilityOff sx={{ fontSize: "16px" }} /> : <Visibility sx={{ fontSize: "16px" }} />}
-                </IconButton>
-              </InputAdornment>
-            ),
-            disableUnderline: false,
-          }}
-          sx={{
-            height: "39px",
-            borderRadius: 1,
-            backgroundColor: "#fff",
-            boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
-            "& .MuiInputBase-input": {
-              color: "#666", // ← Warna abu-abu untuk value (teks yang diketik)
-              textAlign: "left",
-              fontSize: "14px !important", // Force the font size to be smaller
-            },
-            "& input::placeholder": {
-              fontSize: "14px",
-              opacity: 1,
-              color: "#888",
-            },
-            "& .MuiOutlinedInput-root": {
-              height: "39px",
-              "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                borderColor: "#0C20B5",
-                borderWidth: "1px",
-              },
-              "& fieldset": {
-                borderColor: "#ccc",
-                borderRadius: 1,
-              },
-              "&:hover fieldset": {
-                borderColor: "#0C20B5",
-                borderRadius: 1,
-              },
-              "&.Mui-focused fieldset": {
-                borderColor: "#0C20B5",
-                borderRadius: 1,
-              },
-            },
-          }}
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-        />
-      </Box>
-      <Box sx={{ gridColumn: "span 1", mt: 2 }}>
-        <Typography
-          variant="body2"
-          sx={{
-            mb: 0.5,
-            fontWeight: 600,
-            color: "#4f4f4f", // abu-abu gelap
-          }}
-        >
-          Konfirmasi Password
-          <Typography
-            component="span"
-            sx={{
-              color: "#d32f2f", // merah tapi lebih soft daripada 'error'
-              fontSize: "0.95rem", // lebih kecil
-              ml: 1,
-              lineHeight: 1,
-            }}
-          >
-            *
-          </Typography>
-        </Typography>
-        <TextField
-          type={showConfirmPassword ? "text" : "password"}
-          variant="outlined"
-          size="small"
-          fullWidth
-          placeholder="Masukkan Konfirmasi Password..."
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton onClick={() => setShowConfirmPassword((prev) => !prev)} edge="end">
-                  {showConfirmPassword ? <VisibilityOff sx={{ fontSize: "16px" }} /> : <Visibility sx={{ fontSize: "16px" }} />}
-                </IconButton>
-              </InputAdornment>
-            ),
-            disableUnderline: false,
-          }}
-          sx={{
-            height: "39px",
-            borderRadius: 1,
-            backgroundColor: "#fff",
-            boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
-            "& .MuiInputBase-input": {
-              color: "#666", // ← Warna abu-abu untuk value (teks yang diketik)
-              textAlign: "left",
-              fontSize: "14px !important", // Force the font size to be smaller
-            },
-            "& input::placeholder": {
-              fontSize: "14px",
-              opacity: 1,
-              color: "#888",
-            },
-            "& .MuiOutlinedInput-root": {
-              height: "39px",
-              "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                borderColor: "#0C20B5",
-                borderWidth: "1px",
-              },
-              "& fieldset": {
-                borderColor: "#ccc",
-                borderRadius: 1,
-              },
-              "&:hover fieldset": {
-                borderColor: "#0C20B5",
-                borderRadius: 1,
-              },
-              "&.Mui-focused fieldset": {
-                borderColor: "#0C20B5",
-                borderRadius: 1,
-              },
-            },
-          }}
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-        />
-      </Box>
-      <Box sx={{ gridColumn: "span 2", textAlign: "right", mt: 2, mb: 1 }}>
-        <Button
-          variant="contained"
-          size="medium"
-          onClick={handlePasswordUpdate}
-          sx={{
-            borderRadius: 2,
-            px: 2,
-            fontSize: "14px !important", // Force the font size to be smaller
-            fontWeight: 600,
-            textTransform: "none",
-            boxShadow: "0 4px 10px rgba(25, 118, 210, 0.35)",
-          }}
-        >
-          Simpan
-        </Button>
-      </Box>
-    </Card>
-  );
+            <Typography variant="body1" sx={{ mb: 0.5, fontWeight: 600 }}>
+                Form Reset Password
+            </Typography>
+            <Divider sx={{ border: 1, color: "#ccc", mt: 1, mb: 2 }} />
+            <Box sx={{ gridColumn: "span 1" }}>
+                <Typography
+                    variant="body2"
+                    sx={{
+                        mb: 0.5,
+                        fontWeight: 600,
+                        color: "#4f4f4f",
+                    }}
+                >
+                    Password Lama
+                    <Typography
+                        component="span"
+                        sx={{
+                            color: "#d32f2f",
+                            fontSize: "0.95rem",
+                            ml: 1,
+                            lineHeight: 1,
+                        }}
+                    >
+                        *
+                    </Typography>
+                </Typography>
+                <TextField
+                    type={showCurrentPassword ? "text" : "password"}
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    placeholder="Masukkan Password Lama..."
+                    InputProps={{
+                        endAdornment: (
+                            <InputAdornment position="end">
+                                <IconButton
+                                    onClick={() =>
+                                        setShowCurrentPassword((prev) => !prev)
+                                    }
+                                    edge="end"
+                                >
+                                    {showCurrentPassword ? (
+                                        <VisibilityOff
+                                            sx={{ fontSize: "16px" }}
+                                        />
+                                    ) : (
+                                        <Visibility sx={{ fontSize: "16px" }} />
+                                    )}
+                                </IconButton>
+                            </InputAdornment>
+                        ),
+                        disableUnderline: false,
+                    }}
+                    sx={{
+                        height: "39px",
+                        borderRadius: 1,
+                        backgroundColor: "#fff",
+                        boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+                        "& .MuiInputBase-input": {
+                            color: "#666",
+                            textAlign: "left",
+                            fontSize: "14px !important",
+                        },
+                        "& input::placeholder": {
+                            fontSize: "14px",
+                            opacity: 1,
+                            color: "#888",
+                        },
+                        "& .MuiOutlinedInput-root": {
+                            height: "39px",
+                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                                borderColor: "#0C20B5",
+                                borderWidth: "1px",
+                            },
+                            "& fieldset": {
+                                borderColor: "#ccc",
+                                borderRadius: 1,
+                            },
+                            "&:hover fieldset": {
+                                borderColor: "#0C20B5",
+                                borderRadius: 1,
+                            },
+                            "&.Mui-focused fieldset": {
+                                borderColor: "#0C20B5",
+                                borderRadius: 1,
+                            },
+                        },
+                    }}
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                />
+            </Box>
+            <Box sx={{ gridColumn: "span 1", mt: 2 }}>
+                <Typography
+                    variant="body2"
+                    sx={{
+                        mb: 0.5,
+                        fontWeight: 600,
+                        color: "#4f4f4f",
+                    }}
+                >
+                    Password Baru
+                    <Typography
+                        component="span"
+                        sx={{
+                            color: "#d32f2f",
+                            fontSize: "0.95rem",
+                            ml: 1,
+                            lineHeight: 1,
+                        }}
+                    >
+                        *
+                    </Typography>
+                </Typography>
+                <TextField
+                    type={showNewPassword ? "text" : "password"}
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    placeholder="Masukkan Password Baru..."
+                    InputProps={{
+                        endAdornment: (
+                            <InputAdornment position="end">
+                                <IconButton
+                                    onClick={() =>
+                                        setShowNewPassword((prev) => !prev)
+                                    }
+                                    edge="end"
+                                >
+                                    {showNewPassword ? (
+                                        <VisibilityOff
+                                            sx={{ fontSize: "16px" }}
+                                        />
+                                    ) : (
+                                        <Visibility sx={{ fontSize: "16px" }} />
+                                    )}
+                                </IconButton>
+                            </InputAdornment>
+                        ),
+                        disableUnderline: false,
+                    }}
+                    sx={{
+                        height: "39px",
+                        borderRadius: 1,
+                        backgroundColor: "#fff",
+                        boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+                        "& .MuiInputBase-input": {
+                            color: "#666",
+                            textAlign: "left",
+                            fontSize: "14px !important",
+                        },
+                        "& input::placeholder": {
+                            fontSize: "14px",
+                            opacity: 1,
+                            color: "#888",
+                        },
+                        "& .MuiOutlinedInput-root": {
+                            height: "39px",
+                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                                borderColor: "#0C20B5",
+                                borderWidth: "1px",
+                            },
+                            "& fieldset": {
+                                borderColor: "#ccc",
+                                borderRadius: 1,
+                            },
+                            "&:hover fieldset": {
+                                borderColor: "#0C20B5",
+                                borderRadius: 1,
+                            },
+                            "&.Mui-focused fieldset": {
+                                borderColor: "#0C20B5",
+                                borderRadius: 1,
+                            },
+                        },
+                    }}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                />
+            </Box>
+            <Box sx={{ gridColumn: "span 1", mt: 2 }}>
+                <Typography
+                    variant="body2"
+                    sx={{
+                        mb: 0.5,
+                        fontWeight: 600,
+                        color: "#4f4f4f",
+                    }}
+                >
+                    Konfirmasi Password
+                    <Typography
+                        component="span"
+                        sx={{
+                            color: "#d32f2f",
+                            fontSize: "0.95rem",
+                            ml: 1,
+                            lineHeight: 1,
+                        }}
+                    >
+                        *
+                    </Typography>
+                </Typography>
+                <TextField
+                    type={showConfirmPassword ? "text" : "password"}
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    placeholder="Masukkan Konfirmasi Password..."
+                    InputProps={{
+                        endAdornment: (
+                            <InputAdornment position="end">
+                                <IconButton
+                                    onClick={() =>
+                                        setShowConfirmPassword((prev) => !prev)
+                                    }
+                                    edge="end"
+                                >
+                                    {showConfirmPassword ? (
+                                        <VisibilityOff
+                                            sx={{ fontSize: "16px" }}
+                                        />
+                                    ) : (
+                                        <Visibility sx={{ fontSize: "16px" }} />
+                                    )}
+                                </IconButton>
+                            </InputAdornment>
+                        ),
+                        disableUnderline: false,
+                    }}
+                    sx={{
+                        height: "39px",
+                        borderRadius: 1,
+                        backgroundColor: "#fff",
+                        boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+                        "& .MuiInputBase-input": {
+                            color: "#666",
+                            textAlign: "left",
+                            fontSize: "14px !important",
+                        },
+                        "& input::placeholder": {
+                            fontSize: "14px",
+                            opacity: 1,
+                            color: "#888",
+                        },
+                        "& .MuiOutlinedInput-root": {
+                            height: "39px",
+                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                                borderColor: "#0C20B5",
+                                borderWidth: "1px",
+                            },
+                            "& fieldset": {
+                                borderColor: "#ccc",
+                                borderRadius: 1,
+                            },
+                            "&:hover fieldset": {
+                                borderColor: "#0C20B5",
+                                borderRadius: 1,
+                            },
+                            "&.Mui-focused fieldset": {
+                                borderColor: "#0C20B5",
+                                borderRadius: 1,
+                            },
+                        },
+                    }}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+            </Box>
+            <Box
+                sx={{ gridColumn: "span 2", textAlign: "right", mt: 2, mb: 1 }}
+            >
+                <Button
+                    variant="contained"
+                    size="medium"
+                    onClick={handlePasswordUpdate}
+                    sx={{
+                        borderRadius: 2,
+                        px: 2,
+                        fontSize: "14px !important",
+                        fontWeight: 600,
+                        textTransform: "none",
+                        boxShadow: "0 4px 10px rgba(25, 118, 210, 0.35)",
+                    }}
+                >
+                    Simpan
+                </Button>
+            </Box>
+        </Card>
+    );
 };
 
 const customSelectStyles = {
-  control: (base, state) => ({
-    ...base,
-    height: 39,
-    borderRadius: 3,
-    backgroundColor: "#fff",
-    boxShadow: state.isFocused ? "0 0 0 2px rgba(12, 32, 181, 0.1)" : "0 2px 5px rgba(0, 0, 0, 0.1)",
-    borderColor: state.isFocused ? "#0C20B5" : "#ccc",
-    "&:hover": {
-      borderColor: "#0C20B5",
-    },
-  }),
-  menuPortal: (base) => ({
-    ...base,
-    zIndex: 9999,
-  }),
-  singleValue: (base) => ({
-    ...base,
-    textAlign: "start",
-    color: "#666", // ← Abu-abu untuk teks yang dipilih
-  }),
-  placeholder: (base) => ({
-    ...base,
-    textAlign: "start",
-  }),
+    control: (base, state) => ({
+        ...base,
+        height: 39,
+        borderRadius: 3,
+        backgroundColor: "#fff",
+        boxShadow: state.isFocused
+            ? "0 0 0 2px rgba(12, 32, 181, 0.1)"
+            : "0 2px 5px rgba(0, 0, 0, 0.1)",
+        borderColor: state.isFocused ? "#0C20B5" : "#ccc",
+        "&:hover": {
+            borderColor: "#0C20B5",
+        },
+    }),
+    menuPortal: (base) => ({
+        ...base,
+        zIndex: 9999,
+    }),
+    singleValue: (base) => ({
+        ...base,
+        textAlign: "start",
+        color: "#666",
+    }),
+    placeholder: (base) => ({
+        ...base,
+        textAlign: "start",
+    }),
 };
 
 export default MahasiswaProfile;

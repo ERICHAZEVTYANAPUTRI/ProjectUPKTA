@@ -12,13 +12,12 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-        protected static function boot()
+    protected static function boot()
     {
         parent::boot();
 
         static::deleting(function ($user) {
             if ($user->role === 'admin_jurusan') {
-                // Hapus jurusan yang punya kodejurusan sama dengan user ini
                 \App\Models\Jurusan::where('kodejurusan', $user->kodejurusan)->delete();
             }
         });
@@ -70,57 +69,53 @@ class User extends Authenticatable
     {
         return $this->role === $role;
     }
-
     public function getFullNameAttribute()
     {
         return $this->nama_lengkap ?: $this->username;
     }
-
-
     public function getFotoUrlAttribute()
     {
         return asset('storage/' . $this->foto);
     }
     public function penjadwalansSebagaiMahasiswa()
     {
-    return $this->hasMany(PenjadwalanRuangan::class, 'mahasiswa_id','id');
+        return $this->hasMany(PenjadwalanRuangan::class, 'mahasiswa_id', 'id');
     }
     public function penjadwalansSebagaiAdmin()
     {
-    return $this->hasMany(PenjadwalanRuangan::class, 'adminjurusan_id','id');
+        return $this->hasMany(PenjadwalanRuangan::class, 'adminjurusan_id', 'id');
     }
     public function prodi()
     {
-    return $this->belongsTo(Prodi::class, 'prodi_id', 'id');
+        return $this->belongsTo(Prodi::class, 'prodi_id', 'id');
     }
     public function jurusan()
     {
-    return $this->belongsTo(Jurusan::class, 'jurusanmahasiswa_id', 'id');
+        return $this->belongsTo(Jurusan::class, 'jurusanmahasiswa_id', 'id');
     }
     public function kelas()
     {
-    return $this->belongsTo(kelas::class, 'kelas_id', 'id');
+        return $this->belongsTo(kelas::class, 'kelas_id', 'id');
     }
-
     public function dosens()
     {
-    return $this->hasMany(Dosen::class, 'adminjurusan_id', 'id');
+        return $this->hasMany(Dosen::class, 'adminjurusan_id', 'id');
     }
     public function prodis()
     {
-    return $this->hasMany(Prodi::class, 'adminjurusan_id', 'id');
+        return $this->hasMany(Prodi::class, 'adminjurusan_id', 'id');
     }
     public function matakuliahs()
     {
-    return $this->hasMany(Matakuliah::class, 'adminjurusan_id', 'id');
+        return $this->hasMany(Matakuliah::class, 'adminjurusan_id', 'id');
     }
     public function kurikulums()
     {
-    return $this->hasMany(Kurikulum::class, 'adminjurusan_id', 'id');
+        return $this->hasMany(Kurikulum::class, 'adminjurusan_id', 'id');
     }
     public function tahunajarans()
     {
-    return $this->hasMany(TahunAjaran::class, 'adminjurusan_id', 'id');
+        return $this->hasMany(TahunAjaran::class, 'adminjurusan_id', 'id');
     }
     public function peminjamanSelesaimahasiswa()
     {
@@ -130,5 +125,4 @@ class User extends Authenticatable
     {
         return $this->hasMany(peminjamanselesaisesuaijdwal::class, 'adminjurusan_id', 'id');
     }
-
 }

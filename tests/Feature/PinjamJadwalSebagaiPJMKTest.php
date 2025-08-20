@@ -18,7 +18,7 @@ class PinjamJadwalSebagaiPJMKTest extends TestCase
     /** @test */
     public function mahasiswa_dapat_meminjam_jadwal_yang_valid()
     {
-        $this->travelTo(Carbon::parse('2025-07-01 07:55:00'));
+        $this->travelTo(Carbon::parse('2025-07-01 08:00:00')); // Setelah jam 08:00
 
         $mahasiswa = User::factory()->create(['role' => 'mahasiswa']);
         $tahun = TahunAjaran::factory()->create(['is_aktif' => true]);
@@ -99,9 +99,33 @@ class PinjamJadwalSebagaiPJMKTest extends TestCase
             ])
             ->assertStatus(400)
             ->assertJson([
-                'message' => 'Jadwal sudah dipinjam atau sedang dikembalikan.'
+                'message' => 'Jadwal sudah dipinjam.'
             ]);
     }
+
+    /** @test */
+public function gagal_meminjam_jika_status_peminjaman_adalah_prosespengembalian()
+{
+    $mahasiswa = User::factory()->create(['role' => 'mahasiswa']);
+    $tahun = TahunAjaran::factory()->create(['is_aktif' => true]);
+
+    $jadwal = PenjadwalanRuangan::factory()->create([
+        'mahasiswa_id' => $mahasiswa->id,
+        'statuspeminjaman' => 'prosespengembalian',
+        'tahunajaran_id' => $tahun->id,
+        'hari' => now()->locale('id')->isoFormat('dddd'),
+        'jammulai' => now()->subMinute()->format('H:i:s'),
+        'jamselesai' => now()->addHour()->format('H:i:s'),
+    ]);
+
+    $this->actingAs($mahasiswa)
+        ->postJson("/api/pinjam-jadwal/{$jadwal->id}", [
+            'statuspeminjaman' => 'dipinjam',
+        ])
+        ->assertStatus(400)
+        ->assertJson(['message' => 'Jadwal sedang dalam proses pengembalian.']);
+}
+
 
     /** @test */
     public function gagal_meminjam_jika_hari_tidak_sesuai()
@@ -122,10 +146,36 @@ class PinjamJadwalSebagaiPJMKTest extends TestCase
             ])
             ->assertStatus(400)
             ->assertJson([
-                'message' => 'Hari ini bukan jadwal perkuliahan tersebut.'
+                'message' => 'Jadwal ini hanya dapat dipinjam pada hari Rabu pukul 08:00 - 10:00.'
             ]);
     }
 
+        /** @test */
+public function gagal_meminjam_jika_waktu_sekarang_di_luar_jam_jadwal()
+{
+    $this->travelTo(Carbon::parse('2025-07-01 07:00:00'));
+
+    $mahasiswa = User::factory()->create(['role' => 'mahasiswa']);
+    $tahun = TahunAjaran::factory()->create(['is_aktif' => true]);
+
+    $jadwal = PenjadwalanRuangan::factory()->create([
+        'mahasiswa_id' => $mahasiswa->id,
+        'hari' => 'Selasa',
+        'jammulai' => '08:00:00',
+        'jamselesai' => '10:00:00',
+        'statuspeminjaman' => 'belumdipinjam',
+        'tahunajaran_id' => $tahun->id,
+    ]);
+
+    $this->actingAs($mahasiswa)
+        ->postJson("/api/pinjam-jadwal/{$jadwal->id}", [
+            'statuspeminjaman' => 'dipinjam',
+        ])
+        ->assertStatus(400)
+        ->assertJson([
+            'message' => "Peminjaman hanya dapat dilakukan antara pukul 08:00 hingga 10:00."
+        ]);
+}
     /** @test */
     public function gagal_meminjam_jika_tahun_ajaran_tidak_aktif()
     {
@@ -150,32 +200,64 @@ class PinjamJadwalSebagaiPJMKTest extends TestCase
                 'message' => 'Tahun ajaran tidak aktif.'
             ]);
     }
+    
 
-    /** @test */
-    public function gagal_meminjam_jika_ruangan_sedang_dipinjam()
-    {
-        $this->travelTo(Carbon::parse('2025-07-01 07:55:00'));
+/** @test */
+public function gagal_meminjam_jika_status_ruangan_sedang_dipinjam()
+{
+    $this->travelTo(Carbon::parse('2025-07-01 08:30:00'));
 
-        $mahasiswa = User::factory()->create(['role' => 'mahasiswa']);
-        $ruangan = RuanganGKT::factory()->create(['statusruangan' => 'dipinjam']);
-        $tahun = TahunAjaran::factory()->create(['is_aktif' => true]);
+    $mahasiswa = User::factory()->create(['role' => 'mahasiswa']);
+    $tahun = TahunAjaran::factory()->create(['is_aktif' => true]);
+    $ruangan = RuanganGKT::factory()->create(['statusruangan' => 'dipinjam']);
 
-        $jadwal = PenjadwalanRuangan::factory()->create([
-            'mahasiswa_id' => $mahasiswa->id,
-            'hari' => 'Selasa',
-            'jammulai' => '08:00:00',
-            'statuspeminjaman' => 'belumdipinjam',
-            'ruangan_id' => $ruangan->id,
-            'tahunajaran_id' => $tahun->id,
+    $jadwal = PenjadwalanRuangan::factory()->create([
+        'mahasiswa_id' => $mahasiswa->id,
+        'hari' => 'Selasa',
+        'jammulai' => '08:00:00',
+        'jamselesai' => '10:00:00',
+        'statuspeminjaman' => 'belumdipinjam',
+        'tahunajaran_id' => $tahun->id,
+        'ruangan_id' => $ruangan->id,
+    ]);
+
+    $this->actingAs($mahasiswa)
+        ->postJson("/api/pinjam-jadwal/{$jadwal->id}", [
+            'statuspeminjaman' => 'dipinjam',
+        ])
+        ->assertStatus(400)
+        ->assertJson([
+            'message' => 'Ruangan sedang dipinjam, tidak bisa dipinjam.'
         ]);
+}
+/** @test */
 
-        $this->actingAs($mahasiswa)
-            ->postJson("/api/pinjam-jadwal/{$jadwal->id}", [
-                'statuspeminjaman' => 'dipinjam',
-            ])
-            ->assertStatus(400)
-            ->assertJson([
-                'message' => 'Ruangan sedang dipinjam, tidak bisa dipinjam.'
-            ]);
-    }
+public function gagal_meminjam_jika_status_ruangan_sedang_diperbaiki()
+{
+    $this->travelTo(Carbon::parse('2025-07-01 08:30:00'));
+
+    $mahasiswa = User::factory()->create(['role' => 'mahasiswa']);
+    $tahun = TahunAjaran::factory()->create(['is_aktif' => true]);
+    $ruangan = RuanganGKT::factory()->create(['statusruangan' => 'diperbaiki']);
+
+    $jadwal = PenjadwalanRuangan::factory()->create([
+        'mahasiswa_id' => $mahasiswa->id,
+        'hari' => 'Selasa',
+        'jammulai' => '08:00:00',
+        'jamselesai' => '10:00:00',
+        'statuspeminjaman' => 'belumdipinjam',
+        'tahunajaran_id' => $tahun->id,
+        'ruangan_id' => $ruangan->id,
+    ]);
+
+    $this->actingAs($mahasiswa)
+        ->postJson("/api/pinjam-jadwal/{$jadwal->id}", [
+            'statuspeminjaman' => 'dipinjam',
+        ])
+        ->assertStatus(400)
+        ->assertJson([
+            'message' => 'Ruangan sedang diperbaiki, tidak bisa dipinjam.'
+        ]);
+}
+
 }

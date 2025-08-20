@@ -13,8 +13,6 @@ return new class extends Migration
     {
         Schema::create('peminjamanselesaisesuaijdwals', function (Blueprint $table) {
             $table->id();
-
-            // Relasi pengguna & entitas lainnya
             $table->unsignedBigInteger('mahasiswa_id');
             $table->unsignedBigInteger('adminjurusan_id');
             $table->unsignedBigInteger('prodi_id');
@@ -22,28 +20,20 @@ return new class extends Migration
             $table->unsignedBigInteger('dosen_id');
             $table->unsignedBigInteger('ruangan_id');
             $table->unsignedBigInteger('kelas_id');
-
-            // Informasi jadwal & ruangan
             $table->string('hari');
             $table->time('jammulai');
             $table->time('jamselesai');
             $table->string('kodematakuliah');
             $table->string('kebutuhankelas');
-
-            // Status-status peminjaman saat selesai
-            $table->string('statusuploadvidio')->nullable();  // ex: pending, diverifikasi
-            $table->string('statusjadwal')->nullable();       // ex: aktif
-            $table->string('statusterkirim')->nullable();     // ex: terkirim, belumterkirim
-            $table->string('statuspeminjaman')->nullable();   // ex: selesai
+            $table->string('statusuploadvidio')->nullable();
+            $table->string('statusjadwal')->nullable();
+            $table->string('statusterkirim')->nullable();
+            $table->string('statuspeminjaman')->nullable();
             $table->string('statusdigunakan')->nullable();
             $table->string('statustidakdigunakan')->nullable();
             $table->string('statusdialihkan')->nullable();
-
-            $table->timestamp('waktu_pengembalian')->nullable(); // waktu pengembalian disetujui
-
+            $table->timestamp('waktu_pengembalian')->nullable();
             $table->timestamps();
-
-            // Foreign keys
             $table->foreign('kelas_id')->references('id')->on('kelas')->onDelete('cascade');
             $table->foreign('dosen_id')->references('id')->on('dosens')->onDelete('cascade');
             $table->foreign('ruangan_id')->references('id')->on('ruangan_g_k_t_s')->onDelete('cascade');

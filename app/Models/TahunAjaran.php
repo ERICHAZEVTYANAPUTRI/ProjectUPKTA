@@ -19,11 +19,11 @@ class TahunAjaran extends Model
     ];
     public function penjadwalans()
     {
-    return $this->hasMany(PenjadwalanRuangan::class, 'tahunajaran_id', 'id');
+        return $this->hasMany(PenjadwalanRuangan::class, 'tahunajaran_id', 'id');
     }
     public function adminjurusan()
     {
-    return $this->belongsTo(User::class, 'adminjurusan_id')->where('role', 'admin_jurusan');
+        return $this->belongsTo(User::class, 'adminjurusan_id')->where('role', 'admin_jurusan');
     }
     public function peminjamanSelesai()
     {

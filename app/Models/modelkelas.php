@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class modelkelas extends Model
 {
-protected $fillable = [
+    protected $fillable = [
         'nama',
-    ];}
+    ];
+}

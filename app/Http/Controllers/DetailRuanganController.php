@@ -10,8 +10,8 @@ class DetailRuanganController extends Controller
     public function show($gedungId, $roomId)
     {
         $ruangan = RuanganGKT::where('gedung', $gedungId)
-                ->where('id', $roomId)
-                ->first();
+            ->where('id', $roomId)
+            ->first();
 
         if ($ruangan) {
             return response()->json($ruangan);

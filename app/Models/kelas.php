@@ -21,8 +21,8 @@ class kelas extends Model
     {
         return $this->belongsTo(Prodi::class, 'prodi_id', 'id');
     }
-        public function adminjurusan()
+    public function adminjurusan()
     {
-    return $this->belongsTo(User::class, 'adminjurusan_id')->where('role', 'admin_jurusan');
+        return $this->belongsTo(User::class, 'adminjurusan_id')->where('role', 'admin_jurusan');
     }
 }

@@ -17,7 +17,7 @@ class PinjamRuanganDiluarJadwaltest extends TestCase
     /** @test */
     public function berhasil_meminjam_jika_hari_tanggal_dan_status_valid()
     {
-        $this->travelTo(Carbon::parse('2025-07-01 07:55:00')); // Selasa
+        $this->travelTo(Carbon::parse('2025-07-01 08:01:00'));
 
         $mahasiswa = User::factory()->create(['role' => 'mahasiswa']);
         $ruangan = RuanganGKT::factory()->create(['statusruangan' => 'kosong']);
@@ -50,9 +50,9 @@ class PinjamRuanganDiluarJadwaltest extends TestCase
     }
 
     /** @test */
-    public function gagal_meminjam_diluar_hari_jadwal()
+    public function gagal_meminjam_diluar_hari_pengajuan()
     {
-        $this->travelTo(Carbon::parse('2025-07-01 07:55:00')); // Selasa
+        $this->travelTo(Carbon::parse('2025-07-01 08:01:00'));
 
         $mahasiswa = User::factory()->create(['role' => 'mahasiswa']);
         $ruangan = RuanganGKT::factory()->create(['statusruangan' => 'kosong']);
@@ -77,7 +77,7 @@ class PinjamRuanganDiluarJadwaltest extends TestCase
     /** @test */
     public function gagal_meminjam_jika_status_bukan_diterima()
     {
-        $this->travelTo(Carbon::parse('2025-07-01 07:55:00')); // Selasa
+        $this->travelTo(Carbon::parse('2025-07-01 08:01:00'));
 
         $mahasiswa = User::factory()->create(['role' => 'mahasiswa']);
         $ruangan = RuanganGKT::factory()->create(['statusruangan' => 'kosong']);
@@ -102,7 +102,7 @@ class PinjamRuanganDiluarJadwaltest extends TestCase
     /** @test */
     public function gagal_meminjam_jika_status_ruangan_dipinjam_atau_diperbaiki()
     {
-        $this->travelTo(Carbon::parse('2025-07-01 07:55:00')); // Selasa
+        $this->travelTo(Carbon::parse('2025-07-01 08:01:00'));
 
         $mahasiswa = User::factory()->create(['role' => 'mahasiswa']);
         $ruangan = RuanganGKT::factory()->create(['statusruangan' => 'diperbaiki']);

@@ -12,15 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('tahunajarans', function (Blueprint $table) {
-        $table->id();
-        $table->string('tahun'); // e.g. "2024/2025"
-        $table->enum('semester', ['ganjil', 'genap']);
-        $table->boolean('is_aktif')->default(true);
-        $table->unsignedBigInteger('adminjurusan_id');
-        $table->foreign('adminjurusan_id')
-        ->references('id')->on('users')
-        ->onDelete('cascade');
-        $table->timestamps();
+            $table->id();
+            $table->string('tahun'); // e.g. "2024/2025"
+            $table->enum('semester', ['ganjil', 'genap']);
+            $table->boolean('is_aktif')->default(true);
+            $table->unsignedBigInteger('adminjurusan_id');
+            $table->foreign('adminjurusan_id')
+                ->references('id')->on('users')
+                ->onDelete('cascade');
+            $table->timestamps();
         });
     }
 

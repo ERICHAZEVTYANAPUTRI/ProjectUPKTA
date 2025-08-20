@@ -19,27 +19,26 @@ class Prodi extends Model
     ];
     public function jurusan()
     {
-    return $this->belongsTo(Jurusan::class, 'id_jurusan');
+        return $this->belongsTo(Jurusan::class, 'id_jurusan');
     }
     public function penjadwalans()
     {
-    return $this->hasMany(PenjadwalanRuangan::class, 'prodi_id', 'id');
+        return $this->hasMany(PenjadwalanRuangan::class, 'prodi_id', 'id');
     }
     public function users()
     {
-    return $this->hasMany(User::class, 'prodi', 'id');
+        return $this->hasMany(User::class, 'prodi', 'id');
     }
     public function dosens()
     {
-    return $this->hasMany(Dosen::class, 'prodi_id', 'id');
+        return $this->hasMany(Dosen::class, 'prodi_id', 'id');
     }
     public function adminjurusan()
     {
-    return $this->belongsTo(User::class, 'adminjurusan_id')->where('role', 'admin_jurusan');
+        return $this->belongsTo(User::class, 'adminjurusan_id')->where('role', 'admin_jurusan');
     }
     public function peminjamanSelesai()
     {
         return $this->hasMany(peminjamanselesaisesuaijdwal::class, 'prodi_id', 'id');
     }
-
 }

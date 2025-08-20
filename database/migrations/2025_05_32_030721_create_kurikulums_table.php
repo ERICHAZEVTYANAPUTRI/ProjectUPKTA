@@ -11,21 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-Schema::create('kurikulums', function (Blueprint $table) {
-    $table->id();
-    $table->string('nama');
-    $table->unsignedBigInteger('prodi_id');
-    $table->year('tahun_mulai');
-    $table->year('tahun_selesai')->nullable();
-    $table->integer('total_sks')->nullable();
-    $table->boolean('is_aktif')->default(true);
-    $table->text('deskripsi')->nullable();
-    $table->unsignedBigInteger('adminjurusan_id');
-    $table->foreign('adminjurusan_id')
-    ->references('id')->on('users')
-    ->onDelete('cascade');
-    $table->foreign('prodi_id')->references('id')->on('prodis')->onDelete('cascade');
-    $table->timestamps();
+        Schema::create('kurikulums', function (Blueprint $table) {
+            $table->id();
+            $table->string('nama');
+            $table->unsignedBigInteger('prodi_id');
+            $table->year('tahun_mulai');
+            $table->year('tahun_selesai')->nullable();
+            $table->integer('total_sks')->nullable();
+            $table->boolean('is_aktif')->default(true);
+            $table->text('deskripsi')->nullable();
+            $table->unsignedBigInteger('adminjurusan_id');
+            $table->foreign('adminjurusan_id')
+                ->references('id')->on('users')
+                ->onDelete('cascade');
+            $table->foreign('prodi_id')->references('id')->on('prodis')->onDelete('cascade');
+            $table->timestamps();
         });
     }
 

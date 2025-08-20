@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-Schema::create('prodis', function (Blueprint $table) {
+        Schema::create('prodis', function (Blueprint $table) {
             $table->id();
             $table->string('kodeprodi')->unique();
             $table->string('namaprodi');
@@ -19,8 +19,8 @@ Schema::create('prodis', function (Blueprint $table) {
             $table->unsignedBigInteger('adminjurusan_id');
             $table->foreign('id_jurusan')->references('id')->on('jurusans')->onDelete('cascade');
             $table->foreign('adminjurusan_id')
-            ->references('id')->on('users')
-            ->onDelete('cascade');
+                ->references('id')->on('users')
+                ->onDelete('cascade');
 
             $table->timestamps();
         });

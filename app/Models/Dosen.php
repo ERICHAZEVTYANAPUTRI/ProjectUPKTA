@@ -26,11 +26,10 @@ class Dosen extends Model
     }
     public function adminjurusan()
     {
-    return $this->belongsTo(User::class, 'adminjurusan_id')->where('role', 'admin_jurusan');
+        return $this->belongsTo(User::class, 'adminjurusan_id')->where('role', 'admin_jurusan');
     }
-        public function peminjamanSelesai()
+    public function peminjamanSelesai()
     {
         return $this->hasMany(peminjamanselesaisesuaijdwal::class, 'dosen', 'kodematakuliah');
     }
-
 }

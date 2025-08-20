@@ -26,23 +26,18 @@ class PengajuanPeminjamanRuangan extends Model
         'statusuploadvidio',
     ];
 
-    // Relasi ke mahasiswa (user)
     public function mahasiswa()
     {
-        return $this->belongsTo(User::class, 'mahasiswa_id','id');
+        return $this->belongsTo(User::class, 'mahasiswa_id', 'id');
     }
     public function dosen()
     {
-        return $this->belongsTo(Dosen::class, 'dosen_id','id');
+        return $this->belongsTo(Dosen::class, 'dosen_id', 'id');
     }
-
-    // Relasi ke ruangan
     public function ruangan()
     {
-        return $this->belongsTo(RuanganGKT::class, 'ruangan_id','id');
+        return $this->belongsTo(RuanganGKT::class, 'ruangan_id', 'id');
     }
-
-    // Relasi ke matakuliah
     public function matakuliah()
     {
         return $this->belongsTo(MataKuliah::class, 'kodematakuliah', 'kodematakuliah');

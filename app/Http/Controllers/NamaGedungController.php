@@ -28,14 +28,14 @@ class NamaGedungController extends Controller
 
         return response()->json($gedung, 201);
     }
-public function show($gedungId)
-{
-    $gedung = NamaGedung::find($gedungId);
-    if (!$gedung) {
-        return response()->json(['error' => 'Gedung not found'], 404);
+    public function show($gedungId)
+    {
+        $gedung = NamaGedung::find($gedungId);
+        if (!$gedung) {
+            return response()->json(['error' => 'Gedung not found'], 404);
+        }
+        return response()->json($gedung);
     }
-    return response()->json($gedung);
-}
     public function update(Request $request, $id)
     {
         $gedung = NamaGedung::find($id);
@@ -43,18 +43,14 @@ public function show($gedungId)
             return response()->json(['message' => 'Gedung tidak ditemukan'], 404);
         }
 
-        // Validasi data
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        // Update nama gedung
         $gedung->name = $validated['name'];
 
-        // Jika ada file gambar, upload dan update path
         if ($request->hasFile('gambar')) {
-            // Hapus file lama jika ada
             if ($gedung->gambar && Storage::disk('public')->exists($gedung->gambar)) {
                 Storage::disk('public')->delete($gedung->gambar);
             }
@@ -71,7 +67,6 @@ public function show($gedungId)
         ]);
     }
 
-    // Delete gedung
     public function destroy($id)
     {
         $gedung = NamaGedung::find($id);
@@ -79,7 +74,6 @@ public function show($gedungId)
             return response()->json(['message' => 'Gedung tidak ditemukan'], 404);
         }
 
-        // Hapus gambar jika ada
         if ($gedung->gambar && Storage::disk('public')->exists($gedung->gambar)) {
             Storage::disk('public')->delete($gedung->gambar);
         }
@@ -90,7 +84,6 @@ public function show($gedungId)
     }
     public function jmllantaidanruangan()
     {
-        // Ambil data gedung beserta jumlah ruangan dan lantai tertinggi
         $gedungs = DB::table('gedungs')
             ->leftJoin('ruangan_g_k_t_s', 'gedungs.id', '=', 'ruangan_g_k_t_s.gedung')
             ->select(
@@ -105,5 +98,4 @@ public function show($gedungId)
 
         return response()->json($gedungs);
     }
-
 }

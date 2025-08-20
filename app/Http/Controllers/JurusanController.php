@@ -20,7 +20,7 @@ class JurusanController extends Controller
         ], [
             'namajurusan.unique' => 'Nama jurusan sudah terdaftar.',
         ]);
-        
+
 
         $jurusan = new Jurusan();
         $jurusan->namajurusan = $request->namajurusan;
@@ -32,11 +32,11 @@ class JurusanController extends Controller
     public function show($kodejurusanganjil)
     {
         $jurusanganjil = Jurusan::where('kodejurusanganjil', $kodejurusanganjil)->first();
-    
+
         if (!$jurusanganjil) {
             return response()->json(['message' => 'Jurusan not found'], 404);
         }
-    
+
         return response()->json($jurusanganjil);
     }
 }

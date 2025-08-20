@@ -12,16 +12,16 @@ class Jurusan extends Model
     protected $table = 'jurusans';
 
     protected $fillable = [
-    'kodejurusan',
-    'namajurusan',
+        'kodejurusan',
+        'namajurusan',
     ];
     public function prodis()
     {
-    return $this->hasMany(Prodi::class, 'id_jurusan');
+        return $this->hasMany(Prodi::class, 'id_jurusan');
     }
     public function users()
     {
-    return $this->hasMany(User::class, 'jurusanmahasiswa_id', 'id')
-                ->where('role', 'mahasiswa');
+        return $this->hasMany(User::class, 'jurusanmahasiswa_id', 'id')
+            ->where('role', 'mahasiswa');
     }
 }

@@ -22,11 +22,11 @@ return new class extends Migration
             $table->string('jabatanfungsional');
             $table->timestamps();
             $table->foreign('prodi_id')
-            ->references('id')->on('prodis')
-            ->onDelete('cascade');
+                ->references('id')->on('prodis')
+                ->onDelete('cascade');
             $table->foreign('adminjurusan_id')
-            ->references('id')->on('users')
-            ->onDelete('cascade');
+                ->references('id')->on('users')
+                ->onDelete('cascade');
         });
     }
 

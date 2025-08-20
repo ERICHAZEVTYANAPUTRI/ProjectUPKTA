@@ -11,17 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-Schema::create('kelas', function (Blueprint $table) {
-    $table->id();
-    $table->string('nama'); // e.g. "TI 2A"
-    $table->unsignedBigInteger('prodi_id');
-    $table->unsignedBigInteger('adminjurusan_id');
-    $table->timestamps();
-    $table->foreign('adminjurusan_id')
-        ->references('id')->on('users')
-        ->onDelete('cascade');
-    $table->foreign('prodi_id')->references('id')->on('prodis')->onDelete('cascade');
-});
+        Schema::create('kelas', function (Blueprint $table) {
+            $table->id();
+            $table->string('nama');
+            $table->unsignedBigInteger('prodi_id');
+            $table->unsignedBigInteger('adminjurusan_id');
+            $table->timestamps();
+            $table->foreign('adminjurusan_id')
+                ->references('id')->on('users')
+                ->onDelete('cascade');
+            $table->foreign('prodi_id')->references('id')->on('prodis')->onDelete('cascade');
+        });
     }
 
     /**

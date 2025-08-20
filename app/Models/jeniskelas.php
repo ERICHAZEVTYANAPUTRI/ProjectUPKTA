@@ -10,5 +10,4 @@ class jeniskelas extends Model
     protected $fillable = [
         'nama',
     ];
-
 }
