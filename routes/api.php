@@ -60,8 +60,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     if ($user->role === 'mahasiswa') {
         $relations = ['kelas', 'jurusan', 'prodi'];
     } elseif ($user->role === 'admin_jurusan') {
-        // misalnya adminjurusan hanya perlu relasi ke jurusan (kalau ada)
-        $relations = []; // atau kosong jika tidak ada relasi sama sekali
+        $relations = [];
     }
 
     return $user->load($relations);
@@ -254,14 +253,8 @@ Route::middleware('auth:sanctum')->get('/pengajuan-diterima', [PengajuanPeminjam
 
 Route::middleware('auth:sanctum')->get('/peminjaman-berlangsung', [PengajuanPeminjamanRuanganController::class, 'sedangBerlangsung']);
 Route::middleware('auth:sanctum')->group(function () {
-
-    // Endpoint untuk mengambil jadwal yang sedang berlangsung
     Route::get('/peminjaman-berlangsung', [PengajuanPeminjamanRuanganController::class, 'sedangBerlangsung']);
-
-    // Endpoint untuk pengembalian dari pengajuan (non-jadwal tetap)
     Route::post('/kembalikan/{id}', [PengajuanPeminjamanRuanganController::class, 'kembalikan']);
-
-    // Endpoint untuk pengembalian dari penjadwalan (jadwal tetap)
     Route::post('/kembalikansesuaijadwal/{id}', [PenjadwalanRuanganController::class, 'kembalikansesuaijadwal']);
 });
 Route::middleware('auth:sanctum')->post('/pinjam-jadwal/{id}', [PenjadwalanRuanganController::class, 'pinjamJadwal']);
